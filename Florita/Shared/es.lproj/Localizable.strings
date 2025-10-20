@@ -1,0 +1,19 @@
+/* Button labels */
+"waterButton" = "Regar";
+
+/* Status messages */
+"notWateredToday" = "Florita te espera 🌱";
+"wateredToday" = "Hoy ya está regada 🌿";
+
+/* Stage descriptions */
+"stage_sprout" = "Un brote tierno aparece.";
+"stage_leaves" = "Se despliegan hojas verdes.";
+"stage_blooms" = "Tu flor está en plena floración.";
+
+/* Notification copy */
+"notification_body" = "Un recordatorio suave para regar a Florita.";
+"notification_title" = "Florita";
+
+/* Widget description */
+"widget_description" = "Cuida tu pequeño jardín de escritorio.";
+"widget_display_name" = "Florita";

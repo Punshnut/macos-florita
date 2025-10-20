@@ -125,7 +125,7 @@
 			1A0D0C06112233445566778A /* Info.plist */,
 			1A0D0C06112233445566778B /* Florita.entitlements */
 		);
-		path = Florita/Florita;
+		path = FloritaApp;
 		sourceTree = "<group>";
 	};
 	1A0D0C061122334455667783 /* Shared */ = {
@@ -139,7 +139,7 @@
 			1A0D0C061122334455667790 /* NotificationService.swift */,
 			1A0D0C06112233445566779C /* Localizable.strings */
 		);
-		path = Florita/Shared;
+		path = Shared;
 		sourceTree = "<group>";
 	};
 	1A0D0C061122334455667784 /* FloritaWidget */ = {
@@ -149,7 +149,7 @@
 			1A0D0C061122334455667793 /* Info.plist */,
 			1A0D0C061122334455667794 /* FloritaWidget.entitlements */
 		);
-		path = Florita/FloritaWidget;
+		path = FloritaWidget;
 		sourceTree = "<group>";
 	};
 	1A0D0C061122334455667785 /* FloritaTests */ = {
@@ -157,7 +157,7 @@
 		children = (
 			1A0D0C061122334455667795 /* PlantStoreTests.swift */
 		);
-		path = Florita/FloritaTests;
+		path = FloritaTests;
 		sourceTree = "<group>";
 	};
 	1A0D0C061122334455667786 /* Products */ = {
@@ -472,14 +472,14 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			ASSETCATALOG_COMPILER_APPICON_NAME = "";
-			CODE_SIGN_ENTITLEMENTS = Florita/Florita/Florita.entitlements;
+			CODE_SIGN_ENTITLEMENTS = FloritaApp/Florita.entitlements;
 			CODE_SIGN_STYLE = Automatic;
 			COMBINE_HIDPI_IMAGES = YES;
 			CURRENT_PROJECT_VERSION = 1;
 			DEVELOPMENT_TEAM = "";
 			ENABLE_PREVIEWS = YES;
 			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = Florita/Florita/Info.plist;
+			INFOPLIST_FILE = FloritaApp/Info.plist;
 			LD_RUNPATH_SEARCH_PATHS = (
 				"$(inherited)",
 				"@executable_path/../Frameworks"
@@ -498,14 +498,14 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			ASSETCATALOG_COMPILER_APPICON_NAME = "";
-			CODE_SIGN_ENTITLEMENTS = Florita/Florita/Florita.entitlements;
+			CODE_SIGN_ENTITLEMENTS = FloritaApp/Florita.entitlements;
 			CODE_SIGN_STYLE = Automatic;
 			COMBINE_HIDPI_IMAGES = YES;
 			CURRENT_PROJECT_VERSION = 1;
 			DEVELOPMENT_TEAM = "";
 			ENABLE_PREVIEWS = YES;
 			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = Florita/Florita/Info.plist;
+			INFOPLIST_FILE = FloritaApp/Info.plist;
 			LD_RUNPATH_SEARCH_PATHS = (
 				"$(inherited)",
 				"@executable_path/../Frameworks"
@@ -524,12 +524,12 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			APPLICATION_EXTENSION_API_ONLY = YES;
-			CODE_SIGN_ENTITLEMENTS = Florita/FloritaWidget/FloritaWidget.entitlements;
+			CODE_SIGN_ENTITLEMENTS = FloritaWidget/FloritaWidget.entitlements;
 			CODE_SIGN_STYLE = Automatic;
 			CURRENT_PROJECT_VERSION = 1;
 			DEVELOPMENT_TEAM = "";
 			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = Florita/FloritaWidget/Info.plist;
+			INFOPLIST_FILE = FloritaWidget/Info.plist;
 			LD_RUNPATH_SEARCH_PATHS = (
 				"$(inherited)",
 				"@executable_path/../Frameworks",
@@ -550,12 +550,12 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			APPLICATION_EXTENSION_API_ONLY = YES;
-			CODE_SIGN_ENTITLEMENTS = Florita/FloritaWidget/FloritaWidget.entitlements;
+			CODE_SIGN_ENTITLEMENTS = FloritaWidget/FloritaWidget.entitlements;
 			CODE_SIGN_STYLE = Automatic;
 			CURRENT_PROJECT_VERSION = 1;
 			DEVELOPMENT_TEAM = "";
 			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = Florita/FloritaWidget/Info.plist;
+			INFOPLIST_FILE = FloritaWidget/Info.plist;
 			LD_RUNPATH_SEARCH_PATHS = (
 				"$(inherited)",
 				"@executable_path/../Frameworks",

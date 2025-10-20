@@ -13,7 +13,7 @@ Hola y welcome to the very first bloom of Florita, a cozy macOS 14+ SwiftUI app 
 - Unit tests validating growth thresholds and calendar-day comparisons.
 
 ## Getting Started
-1. Open `Florita/Florita.xcodeproj` in Xcode 15 or newer (macOS 14 SDK).
+1. Open `Florita.xcodeproj` in Xcode 15 or newer (macOS 14 SDK).
 2. Select the **Florita** scheme and run on “My Mac (macOS 14+)”.
 3. On first launch, follow or skip the intro to learn the basics.
 4. Build **FloritaWidget** once, then add the widget from the macOS widget gallery.

@@ -164,22 +164,19 @@ private struct GrowthSceneLayers {
     /// Paints animated sky gradients and clouds.
     func makeSkyLayer(size: CGSize, time: TimeInterval?) -> some View {
         let drift = CGFloat(sin((time ?? 0) / 5.0)) * 16
+        let glowPulse = 0.12 + 0.08 * sin((time ?? 0) / 4.2)
+        let shouldShowBloomGlow = growthStage != .blooms
         return ZStack {
-            if showsSunRays {
-                LinearGradient(colors: [Color.white.opacity(0.34), Color.white.opacity(0)],
-                               startPoint: .top,
-                               endPoint: .bottom)
-                    .frame(width: size.width * 0.9, height: size.height * 0.7)
-                    .position(x: size.width / 2, y: size.height * 0.18)
-                    .blendMode(.screen)
-            } else {
-                LinearGradient(colors: [Color(red: 1.0, green: 0.98, blue: 0.88).opacity(0.28),
+            if shouldShowBloomGlow {
+                RadialGradient(colors: [Color(red: 1.0, green: 0.98, blue: 0.88).opacity(0.28 + glowPulse),
                                         Color.clear],
-                               startPoint: .top,
-                               endPoint: .bottom)
-                    .frame(width: size.width, height: size.height * 0.7)
-                    .position(x: size.width * 0.4, y: size.height * 0.26)
+                               center: UnitPoint(x: 0.25, y: 0.18),
+                               startRadius: 12,
+                               endRadius: size.width * 0.7)
                     .blendMode(.plusLighter)
+            }
+            if showsSunRays {
+                sunTopGlow(size: size, time: time)
             }
             cloud(at: CGPoint(x: size.width * 0.25 + drift, y: size.height * 0.18), scale: 0.9)
             cloud(at: CGPoint(x: size.width * 0.68 + drift * 0.6, y: size.height * 0.16), scale: 1.15)
@@ -190,35 +187,51 @@ private struct GrowthSceneLayers {
     /// Animated rays that cascade from the top when Florita has been watered.
     private func sunRayLayer(size: CGSize, time: TimeInterval?) -> some View {
         let timeline = time ?? 0
+        let rayIndices = Array(-4...4)
         return ZStack {
-            ForEach(-3...3, id: \.self) { offset in
+            ForEach(rayIndices, id: \.self) { offset in
                 let normalized = Double(offset)
-                let baseWidth = max(0.08, 0.18 - abs(normalized) * 0.02)
-                let rayWidth = size.width * CGFloat(baseWidth)
-                let rayHeight = size.height * (1.32 + CGFloat(abs(normalized)) * 0.06)
-                let sway = sin(timeline * 1.35 + normalized * 0.9) * 3.6
-                RoundedRectangle(cornerRadius: rayWidth / 2, style: .continuous)
+                let widthFactor = max(0.08, 0.18 - abs(normalized) * 0.015)
+                let rayWidth = size.width * CGFloat(widthFactor)
+                let rayHeight = size.height * (1.25 + CGFloat(abs(normalized)) * 0.08)
+                let sway = sin(timeline * 1.1 + normalized * 0.65) * 2.6
+                Rectangle()
                     .fill(
-                        LinearGradient(colors: [Color.white.opacity(0.36),
+                        LinearGradient(colors: [Color.white.opacity(0.32),
                                                 Color.white.opacity(0)],
                                        startPoint: .top,
                                        endPoint: .bottom)
                     )
-                    .frame(width: rayWidth, height: rayHeight)
-                    .position(x: size.width / 2, y: -size.height * 0.18)
-                    .rotationEffect(.degrees(normalized * 5.8 + sway))
-                    .opacity(0.27 - abs(normalized) * 0.035)
+                    .frame(width: rayWidth, height: rayHeight, alignment: .top)
+                    .offset(y: -size.height * 0.3)
+                    .position(x: size.width / 2, y: size.height * 0.04)
+                    .rotationEffect(.degrees(normalized * 6.2 + sway), anchor: .top)
+                    .opacity(0.24 - abs(normalized) * 0.022)
                     .blendMode(.screen)
             }
         }
-        .overlay(
-            LinearGradient(colors: [Color.white.opacity(0.28), Color.clear],
+    }
+
+    private func sunTopGlow(size: CGSize, time: TimeInterval?) -> some View {
+        let pulse = 0.15 + 0.08 * sin((time ?? 0) / 3.5)
+        return ZStack {
+            Circle()
+                .fill(RadialGradient(colors: [Color.white.opacity(0.55 + pulse),
+                                              Color.white.opacity(0)],
+                                     center: .top,
+                                     startRadius: 0,
+                                     endRadius: size.width * 0.82))
+                .frame(width: size.width * 1.4, height: size.height * 1.4)
+                .offset(y: -size.height * 0.62)
+                .blendMode(.screen)
+            LinearGradient(colors: [Color.white.opacity(0.35 + pulse * 0.4),
+                                    Color.white.opacity(0)],
                            startPoint: .top,
                            endPoint: .bottom)
-                .frame(width: size.width * 0.86, height: size.height * 0.74)
-                .position(x: size.width / 2, y: size.height * 0.08)
+                .frame(width: size.width * 1.05, height: size.height * 0.72)
+                .offset(y: -size.height * 0.1)
                 .blendMode(.screen)
-        )
+        }
     }
 
     /// Subtle shadow that grounds the soil layer.

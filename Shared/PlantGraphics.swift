@@ -407,6 +407,34 @@ private struct GrowthSceneLayers {
         case violet
     }
 
+    /// Layout metrics precomputed for a blooming tulip.
+    private struct TulipGeometry {
+        let centerX: CGFloat
+        let baseY: CGFloat
+        let stemHeight: CGFloat
+        let stemWidth: CGFloat
+        let flowerHeight: CGFloat
+        let flowerWidth: CGFloat
+    }
+
+    /// Motion values shared between the stem and bloom.
+    private struct TulipMotion {
+        let stemScale: CGFloat
+        let bloomScale: CGFloat
+        let swayContribution: Double
+        let shakeOscillation: Double
+        let bob: Double
+        let tilt: Double
+
+        var stemRotation: Angle {
+            Angle.degrees(tilt + swayContribution * 0.6 + shakeOscillation * 3.5)
+        }
+
+        var bloomRotation: Angle {
+            Angle.degrees(tilt + swayContribution * 1.1 + bob * 0.35 + shakeOscillation * 4.6)
+        }
+    }
+
     /// Blooming flower layer that emerges at the final growth stage.
     func makeBloomLayer(size: CGSize,
                         growth: CGFloat,
@@ -481,14 +509,14 @@ private struct GrowthSceneLayers {
             ForEach(Array(specs.enumerated()), id: \.offset) { index, spec in
                 let bloomProgress = stagedBloomGrowth(global: growth, start: spec.start, span: spec.span)
                 if bloomProgress > 0 {
-                    let centerX = size.width * spec.base.x
-                    let baseY = size.height * spec.base.y
-                    let stemHeight = size.height * spec.stemHeight
-                    let stemWidth = size.width * spec.stemWidth
-                    let flowerHeight = size.height * spec.size.height
-                    let flowerWidth = size.width * spec.size.width
-                    let stemScale = 0.35 + 0.65 * bloomProgress
-                    let bloomScale = 0.35 + 0.65 * bloomProgress
+                    let geometry = TulipGeometry(centerX: size.width * spec.base.x,
+                                                 baseY: size.height * spec.base.y,
+                                                 stemHeight: size.height * spec.stemHeight,
+                                                 stemWidth: size.width * spec.stemWidth,
+                                                 flowerHeight: size.height * spec.size.height,
+                                                 flowerWidth: size.width * spec.size.width)
+                    let stemScale: CGFloat = 0.35 + 0.65 * bloomProgress
+                    let bloomScale: CGFloat = 0.38 + 0.62 * bloomProgress
                     let swayContribution = sway * spec.swayMultiplier
                     let baseBob = sin((time ?? 0) / 1.8 + Double(index) * 0.9) * Double(bloomProgress) * 1.8
                     let shakeOscillation: Double
@@ -498,41 +526,99 @@ private struct GrowthSceneLayers {
                         shakeOscillation = sin(phaseProgress * .pi * 5 + Double(index) * 0.7) * tapNormalized
                     }
                     let bob = baseBob + shakeOscillation * Double(bloomProgress) * 2.4
-                    let stemTopY = baseY - stemHeight * stemScale
+                    let motion = TulipMotion(stemScale: stemScale,
+                                             bloomScale: bloomScale,
+                                             swayContribution: swayContribution,
+                                             shakeOscillation: shakeOscillation,
+                                             bob: bob,
+                                             tilt: spec.tilt)
+                    let highlightStrength = CGFloat(0.75 + tapNormalized * 0.35)
 
-                    Capsule(style: .continuous)
-                        .fill(stemGradient)
-                        .frame(width: stemWidth, height: stemHeight)
-                        .scaleEffect(x: 1, y: stemScale, anchor: .bottom)
-                        .rotationEffect(.degrees(spec.tilt + swayContribution * 0.6 + shakeOscillation * 3.5), anchor: .bottom)
-                        .position(x: centerX, y: baseY)
-                        .opacity(Double(bloomProgress))
+                    bloomStem(geometry: geometry,
+                              motion: motion,
+                              gradient: stemGradient,
+                              bloomProgress: bloomProgress)
 
-                    TulipShape()
-                        .fill(tulipGradient(palette: spec.palette))
-                        .frame(width: flowerWidth, height: flowerHeight)
-                        .scaleEffect(bloomScale, anchor: .bottom)
-                        .rotationEffect(.degrees(spec.tilt + swayContribution * 1.1 + bob * 0.35 + shakeOscillation * 4.6),
-                                        anchor: .bottom)
-                        .position(x: centerX, y: stemTopY)
-                        .opacity(Double(bloomProgress))
-                        .overlay(
-                            TulipShape()
-                                .stroke(Color.white.opacity(0.18), lineWidth: size.width * 0.006)
-                        )
-                        .overlay(
-                            RadialGradient(colors: [Color.white.opacity(0.35), Color.white.opacity(0)],
-                                           center: .topLeading,
-                                           startRadius: 0,
-                                           endRadius: max(flowerWidth, flowerHeight) * 0.6)
-                                .opacity(Double(bloomProgress) * 0.7)
-                                .mask(TulipShape())
-                        )
-                        .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
+                    bloomFlower(geometry: geometry,
+                                motion: motion,
+                                palette: spec.palette,
+                                bloomProgress: bloomProgress,
+                                highlightStrength: highlightStrength,
+                                canvasWidth: size.width)
                         .zIndex(Double(index) + 1)
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func bloomStem(geometry: TulipGeometry,
+                           motion: TulipMotion,
+                           gradient: LinearGradient,
+                           bloomProgress: CGFloat) -> some View {
+        Capsule(style: .continuous)
+            .fill(gradient)
+            .frame(width: geometry.stemWidth, height: geometry.stemHeight)
+            .scaleEffect(x: 1, y: motion.stemScale, anchor: .bottom)
+            .rotationEffect(motion.stemRotation, anchor: .bottom)
+            .position(x: geometry.centerX, y: geometry.baseY)
+            .opacity(Double(bloomProgress))
+    }
+
+    @ViewBuilder
+    private func bloomFlower(geometry: TulipGeometry,
+                             motion: TulipMotion,
+                             palette: TulipPalette,
+                             bloomProgress: CGFloat,
+                             highlightStrength: CGFloat,
+                             canvasWidth: CGFloat) -> some View {
+        let stemTopY = geometry.baseY - geometry.stemHeight * motion.stemScale
+        TulipShape()
+            .fill(tulipGradient(palette: palette))
+            .frame(width: geometry.flowerWidth, height: geometry.flowerHeight)
+            .scaleEffect(motion.bloomScale, anchor: .bottom)
+            .rotationEffect(motion.bloomRotation, anchor: .bottom)
+            .position(x: geometry.centerX, y: stemTopY)
+            .opacity(Double(bloomProgress))
+            .overlay(tulipEdgeHighlight(canvasWidth: canvasWidth,
+                                        bloomProgress: bloomProgress,
+                                        highlightStrength: highlightStrength))
+            .overlay(tulipShineOverlay(width: geometry.flowerWidth,
+                                       height: geometry.flowerHeight,
+                                       bloomProgress: bloomProgress,
+                                       highlightStrength: highlightStrength))
+            .shadow(color: Color.black.opacity(0.18), radius: 6, x: 0, y: 3)
+    }
+
+    private func tulipEdgeHighlight(canvasWidth: CGFloat,
+                                    bloomProgress: CGFloat,
+                                    highlightStrength: CGFloat) -> some View {
+        TulipShape()
+            .stroke(Color.white.opacity(Double(highlightStrength) * 0.26),
+                    lineWidth: canvasWidth * 0.006)
+            .opacity(Double(bloomProgress))
+            .blendMode(.screen)
+    }
+
+    private func tulipShineOverlay(width: CGFloat,
+                                   height: CGFloat,
+                                   bloomProgress: CGFloat,
+                                   highlightStrength: CGFloat) -> some View {
+        let maxDimension = max(width, height)
+        return ZStack {
+            TulipShape()
+                .fill(LinearGradient(colors: [
+                    Color.white.opacity(Double(highlightStrength) * 0.36),
+                    Color.white.opacity(0.04)
+                ], startPoint: .topLeading, endPoint: .bottomTrailing))
+            TulipShape()
+                .fill(RadialGradient(colors: [
+                    Color.white.opacity(Double(highlightStrength) * 0.58),
+                    Color.white.opacity(0)
+                ], center: .topLeading, startRadius: 0, endRadius: maxDimension * 0.72))
+        }
+        .opacity(Double(bloomProgress))
+        .blendMode(.screen)
     }
 
     /// Decorative pebbles layered over the soil to add depth.

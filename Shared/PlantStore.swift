@@ -6,8 +6,6 @@ import Combine
 final class FloritaGrowthStore: ObservableObject {
     /// Shared instance leveraged by the app entry points.
     static let sharedStore = FloritaGrowthStore()
-    /// Shared user defaults container for persistence.
-    static let sharedUserDefaults = UserDefaults.standard
 
     /// Keys used when persisting values with `AppStorage`.
     enum PreferenceKey {
@@ -34,7 +32,7 @@ final class FloritaGrowthStore: ObservableObject {
     private let calendarProvider: Calendar
 
     /// Creates a store backed by the supplied defaults and calendar implementation.
-    init(userDefaults: UserDefaults = FloritaGrowthStore.sharedUserDefaults,
+    init(userDefaults: UserDefaults = .standard,
          calendar: Calendar = Calendar(identifier: .gregorian)) {
         calendarProvider = calendar
         lastWateredTimestampPreference = AppStorage(wrappedValue: 0, PreferenceKey.lastWateredTimestamp, store: userDefaults)

@@ -435,6 +435,15 @@ private struct GrowthSceneLayers {
         }
     }
 
+    /// Bundle needed to render an individual tulip instance.
+    private struct TulipRenderContext {
+        let geometry: TulipGeometry
+        let motion: TulipMotion
+        let bloomProgress: CGFloat
+        let highlightStrength: CGFloat
+        let zIndex: Double
+    }
+
     /// Blooming flower layer that emerges at the final growth stage.
     func makeBloomLayer(size: CGSize,
                         growth: CGFloat,
@@ -503,52 +512,79 @@ private struct GrowthSceneLayers {
                                           startPoint: .bottom,
                                           endPoint: .top)
         let tapNormalized = tapShakeNormalized(tapShakePhase)
-        let phaseProgress = 1 - tapNormalized
+        let phaseProgress = CGFloat(1 - tapNormalized)
 
         return ZStack {
             ForEach(Array(specs.enumerated()), id: \.offset) { index, spec in
-                let bloomProgress = stagedBloomGrowth(global: growth, start: spec.start, span: spec.span)
-                if bloomProgress > 0 {
-                    let geometry = TulipGeometry(centerX: size.width * spec.base.x,
-                                                 baseY: size.height * spec.base.y,
-                                                 stemHeight: size.height * spec.stemHeight,
-                                                 stemWidth: size.width * spec.stemWidth,
-                                                 flowerHeight: size.height * spec.size.height,
-                                                 flowerWidth: size.width * spec.size.width)
-                    let stemScale: CGFloat = 0.35 + 0.65 * bloomProgress
-                    let bloomScale: CGFloat = 0.38 + 0.62 * bloomProgress
-                    let swayContribution = sway * spec.swayMultiplier
-                    let baseBob = sin((time ?? 0) / 1.8 + Double(index) * 0.9) * Double(bloomProgress) * 1.8
-                    let shakeOscillation: Double
-                    if let time {
-                        shakeOscillation = sin(time * 18 + Double(index) * 1.1) * tapNormalized
-                    } else {
-                        shakeOscillation = sin(phaseProgress * .pi * 5 + Double(index) * 0.7) * tapNormalized
-                    }
-                    let bob = baseBob + shakeOscillation * Double(bloomProgress) * 2.4
-                    let motion = TulipMotion(stemScale: stemScale,
-                                             bloomScale: bloomScale,
-                                             swayContribution: swayContribution,
-                                             shakeOscillation: shakeOscillation,
-                                             bob: bob,
-                                             tilt: spec.tilt)
-                    let highlightStrength = CGFloat(0.75 + tapNormalized * 0.35)
-
-                    bloomStem(geometry: geometry,
-                              motion: motion,
+                if let context = tulipContext(for: spec,
+                                              index: index,
+                                              size: size,
+                                              growth: growth,
+                                              sway: sway,
+                                              time: time,
+                                              tapNormalized: tapNormalized,
+                                              phaseProgress: phaseProgress) {
+                    bloomStem(geometry: context.geometry,
+                              motion: context.motion,
                               gradient: stemGradient,
-                              bloomProgress: bloomProgress)
+                              bloomProgress: context.bloomProgress)
 
-                    bloomFlower(geometry: geometry,
-                                motion: motion,
+                    bloomFlower(geometry: context.geometry,
+                                motion: context.motion,
                                 palette: spec.palette,
-                                bloomProgress: bloomProgress,
-                                highlightStrength: highlightStrength,
+                                bloomProgress: context.bloomProgress,
+                                highlightStrength: context.highlightStrength,
                                 canvasWidth: size.width)
-                        .zIndex(Double(index) + 1)
+                        .zIndex(context.zIndex)
                 }
             }
         }
+    }
+
+    private func tulipContext(for spec: TulipSpec,
+                              index: Int,
+                              size: CGSize,
+                              growth: CGFloat,
+                              sway: Double,
+                              time: TimeInterval?,
+                              tapNormalized: Double,
+                              phaseProgress: CGFloat) -> TulipRenderContext? {
+        let bloomProgress = stagedBloomGrowth(global: growth, start: spec.start, span: spec.span)
+        guard bloomProgress > 0 else { return nil }
+
+        let geometry = TulipGeometry(centerX: size.width * spec.base.x,
+                                     baseY: size.height * spec.base.y,
+                                     stemHeight: size.height * spec.stemHeight,
+                                     stemWidth: size.width * spec.stemWidth,
+                                     flowerHeight: size.height * spec.size.height,
+                                     flowerWidth: size.width * spec.size.width)
+        let stemScale: CGFloat = 0.35 + 0.65 * bloomProgress
+        let bloomScale: CGFloat = 0.38 + 0.62 * bloomProgress
+        let swayContribution = sway * spec.swayMultiplier
+        let basePhase = (time ?? 0) / 1.8 + Double(index) * 0.9
+        let baseBob = sin(basePhase) * Double(bloomProgress) * 1.8
+        let shakeOscillation: Double
+        if let time {
+            shakeOscillation = sin(time * 18 + Double(index) * 1.1) * tapNormalized
+        } else {
+            let fallbackPhase = Double(phaseProgress) * .pi * 5 + Double(index) * 0.7
+            shakeOscillation = sin(fallbackPhase) * tapNormalized
+        }
+        let bob = baseBob + shakeOscillation * Double(bloomProgress) * 2.4
+        let motion = TulipMotion(stemScale: stemScale,
+                                 bloomScale: bloomScale,
+                                 swayContribution: swayContribution,
+                                 shakeOscillation: shakeOscillation,
+                                 bob: bob,
+                                 tilt: spec.tilt)
+        let highlightStrength = CGFloat(0.75 + tapNormalized * 0.35)
+        let zIndex = Double(index) + 1
+
+        return TulipRenderContext(geometry: geometry,
+                                  motion: motion,
+                                  bloomProgress: bloomProgress,
+                                  highlightStrength: highlightStrength,
+                                  zIndex: zIndex)
     }
 
     @ViewBuilder

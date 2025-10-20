@@ -2,11 +2,13 @@ import SwiftUI
 
 struct FloritaMenuBarView: View {
     @ObservedObject var store: PlantStore
+    @State private var isWatering = false
 
     var body: some View {
         VStack(spacing: 16) {
             miniHeader
-            miniPlant
+            PlantDisplayView(stage: store.stage, animated: store.prefersAnimatedGraphics)
+                .overlay(WateringOverlay(isActive: isWatering))
                 .frame(width: 140, height: 140)
             Button(action: waterPlant) {
                 Text(Localization.string("waterButton"))
@@ -46,18 +48,13 @@ struct FloritaMenuBarView: View {
         store.hasWateredToday ? Localization.string("wateredToday") : Localization.string("notWateredToday")
     }
 
-    private var miniPlant: some View {
-        Group {
-            if store.prefersAnimatedGraphics {
-                AnimatedPlantCanvas(stage: store.stage)
-            } else {
-                PlantCanvas(stage: store.stage)
-            }
-        }
-    }
-
     private func waterPlant() {
         guard store.waterToday() else { return }
+        withAnimation { isWatering = true }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.0))
+            withAnimation { isWatering = false }
+        }
         let now = Date()
         let nextNine = Calendar.current.nextDate(after: now, matching: DateComponents(hour: 9, minute: 0), matchingPolicy: .nextTimePreservingSmallerComponents) ?? now.addingTimeInterval(24 * 60 * 60)
         NotificationService.shared.scheduleCareReminder(at: nextNine)

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FloritaMiniView: View {
     @ObservedObject var store: PlantStore
+    @State private var isWatering = false
 
     var body: some View {
         ZStack {
@@ -16,8 +17,9 @@ struct FloritaMiniView: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    miniPlant
-                        .frame(width: 120, height: 120)
+            PlantDisplayView(stage: store.stage, animated: store.prefersAnimatedGraphics)
+                .overlay(WateringOverlay(isActive: isWatering))
+                .frame(width: 120, height: 120)
                 }
                 Button(action: waterPlant) {
                     Text(StoreCopy.waterButton)
@@ -38,22 +40,17 @@ struct FloritaMiniView: View {
         .padding(12)
     }
 
-    private var miniPlant: some View {
-        Group {
-            if store.prefersAnimatedGraphics {
-                AnimatedPlantCanvas(stage: store.stage)
-            } else {
-                PlantCanvas(stage: store.stage)
-            }
-        }
-    }
-
     private var statusText: String {
         store.hasWateredToday ? StoreCopy.wateredToday : StoreCopy.notWateredToday
     }
 
     private func waterPlant() {
         guard store.waterToday() else { return }
+        withAnimation { isWatering = true }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.0))
+            withAnimation { isWatering = false }
+        }
         let now = Date()
         let nextNine = Calendar.current.nextDate(after: now, matching: DateComponents(hour: 9, minute: 0), matchingPolicy: .nextTimePreservingSmallerComponents) ?? now.addingTimeInterval(24 * 60 * 60)
         NotificationService.shared.scheduleCareReminder(at: nextNine)

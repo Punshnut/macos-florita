@@ -3,18 +3,16 @@ struct ContentView: View {
     @ObservedObject var store: PlantStore
     @Environment(\.openWindow) private var openWindow
     @State private var showOnboarding = false
+    @State private var isWatering = false
 
     var body: some View {
         VStack(spacing: 28) {
             Spacer(minLength: 12)
-            Group {
-                if store.prefersAnimatedGraphics {
-                    AnimatedPlantCanvas(stage: store.stage)
-                } else {
-                    PlantCanvas(stage: store.stage)
-                }
-            }
-            .padding(.horizontal, 24)
+            PlantDisplayView(stage: store.stage, animated: store.prefersAnimatedGraphics)
+                .overlay(WateringOverlay(isActive: isWatering))
+                .padding(.horizontal, 24)
+                .scaleEffect(isWatering ? 1.02 : 1)
+                .animation(.spring(response: 0.6, dampingFraction: 0.75), value: isWatering)
 
             VStack(spacing: 12) {
                 Text(statusText)
@@ -41,6 +39,8 @@ struct ContentView: View {
             .buttonStyle(.plain)
             .padding(.horizontal, 36)
             .disabled(store.hasWateredToday)
+            .scaleEffect(isWatering ? 0.98 : 1)
+            .animation(.spring(response: 0.4, dampingFraction: 0.65), value: isWatering)
 
             Button(action: { openWindow(id: "mini") }) {
                 Label("Open Florita Mini", systemImage: "rectangle.portrait.on.rectangle.portrait")
@@ -99,6 +99,15 @@ struct ContentView: View {
     private func waterPlant() {
         let didWater = store.waterToday()
         guard didWater else { return }
+        withAnimation {
+            isWatering = true
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.1))
+            withAnimation {
+                isWatering = false
+            }
+        }
         let now = Date()
         let nextNine = Calendar.current.nextDate(after: now, matching: DateComponents(hour: 9, minute: 0), matchingPolicy: .nextTimePreservingSmallerComponents) ?? now.addingTimeInterval(24 * 60 * 60)
         NotificationService.shared.scheduleCareReminder(at: nextNine)

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xcodeproj PUBLIC "-//Apple//DTD Xcode Project Document 1.0//EN" "http://www.apple.com/DTDs/Xcode-Project-Document-1.0.dtd">
+<xcodeproj>
+    <objectVersion>46</objectVersion>
+    <objects>
+        <object>
+            <isa>PBXProject</isa>
+            <attributes>
+                <LastUpgradeVersion>1200</LastUpgradeVersion>
+                <ORGANIZATIONNAME>YourOrganization</ORGANIZATIONNAME>
+            </attributes>
+            <children>
+                <object>
+                    <isa>PBXGroup</isa>
+                    <name>MacNotes</name>
+                    <children>
+                        <object>
+                            <isa>PBXFileReference</isa>
+                            <name>MacNotesApp.swift</name>
+                            <path>MacNotesApp.swift</path>
+                            <sourceTree>SOURCE_ROOT</sourceTree>
+                        </object>
+                        <object>
+                            <isa>PBXFileReference</isa>
+                            <name>ContentView.swift</name>
+                            <path>ContentView.swift</path>
+                            <sourceTree>SOURCE_ROOT</sourceTree>
+                        </object>
+                        <object>
+                            <isa>PBXFileReference</isa>
+                            <name>Info.plist</name>
+                            <path>Info.plist</path>
+                            <sourceTree>SOURCE_ROOT</sourceTree>
+                        </object>
+                    </children>
+                </object>
+            </children>
+        </object>
+    </objects>
+</xcodeproj>

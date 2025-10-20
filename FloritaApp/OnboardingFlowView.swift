@@ -40,8 +40,12 @@ struct OnboardingFlowView: View {
                     .padding(.horizontal, 24)
                     .tag(offset)
                 }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .always))
+        }
+#if os(macOS)
+            .tabViewStyle(DefaultTabViewStyle())
+#else
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+#endif
 
             HStack {
                 ProgressView(value: Double(index + 1), total: Double(steps.count))

@@ -1,8 +1,11 @@
 import SwiftUI
 
+/// Lightweight floating companion window mirroring Florita's status.
 struct FloritaMiniView: View {
-    @ObservedObject var store: PlantStore
-    @State private var isWatering = false
+    /// Shared growth store that powers the UI.
+    @ObservedObject var growthStore: FloritaGrowthStore
+    /// Controls the watering animation overlay.
+    @State private var isWateringAnimationActive = false
 
     var body: some View {
         ZStack {
@@ -12,81 +15,95 @@ struct FloritaMiniView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(statusText)
+                        Text(wateringStatusMessage)
                             .font(.headline)
-                        Text(store.stage.localizedDescription)
+                        Text(growthStore.currentGrowthStage.localizedStageDescription)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    PlantDisplayView(stage: store.stage, animated: store.prefersAnimatedGraphics)
-                        .overlay(WateringOverlay(isActive: isWatering))
+                    FloritaPlantDisplay(growthStage: growthStore.currentGrowthStage,
+                                        isAnimated: growthStore.isAnimationEnabled)
+                        .overlay(WateringAnimationOverlay(isActive: isWateringAnimationActive))
                         .frame(width: 120, height: 120)
                 }
-                Button(action: waterPlant) {
-                    Text(StoreCopy.waterButton)
+                Button(action: handleWateringAction) {
+                    Text(Copy.waterButton)
                         .font(.headline)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 18)
-                        .background(LinearGradient(colors: [Color(red: 0.36, green: 0.64, blue: 0.57), Color(red: 0.27, green: 0.53, blue: 0.5)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .background(LinearGradient(colors: [Color(red: 0.36, green: 0.64, blue: 0.57),
+                                                            Color(red: 0.27, green: 0.53, blue: 0.5)],
+                                                   startPoint: .topLeading,
+                                                   endPoint: .bottomTrailing))
                         .foregroundColor(.white)
                         .clipShape(Capsule())
                         .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
                 }
                 .buttonStyle(.plain)
-                .disabled(store.hasWateredToday)
+                .disabled(growthStore.didWaterToday)
             }
             .padding(20)
         }
         .background(Color.clear)
-        .background(WindowTransparencyApplier(isTransparent: store.backgroundStyle.isTransparent || store.miniWindowPrefersFullTransparency))
+        .background(WindowTransparencySynchronizer(isTransparent: growthStore.preferredBackgroundStyle.isTransparent || growthStore.isMiniWindowFullyTransparent))
         .padding(12)
     }
 
-    private var statusText: String {
-        store.hasWateredToday ? StoreCopy.wateredToday : StoreCopy.notWateredToday
+    /// Localized status line reflecting whether Florita was watered today.
+    private var wateringStatusMessage: String {
+        growthStore.didWaterToday ? Copy.wateredToday : Copy.notWateredToday
     }
 
-    private func waterPlant() {
-        guard store.waterToday() else { return }
-        triggerWateringAnimation()
+    /// Performs watering logic, animation, and reminder scheduling.
+    private func handleWateringAction() {
+        guard growthStore.registerDailyWatering() else { return }
+        performWateringAnimation()
         scheduleNextReminder()
     }
 
-    private enum StoreCopy {
-        static let waterButton = Localization.string("waterButton")
-        static let notWateredToday = Localization.string("notWateredToday")
-        static let wateredToday = Localization.string("wateredToday")
+    /// Centralized copy used by the mini window.
+    private enum Copy {
+        static let waterButton = FloritaLocalization.localizedString("waterButton")
+        static let notWateredToday = FloritaLocalization.localizedString("notWateredToday")
+        static let wateredToday = FloritaLocalization.localizedString("wateredToday")
     }
 
+    /// Determines whether the view should render its own background treatment.
     private var shouldShowBackdrop: Bool {
-        !(store.backgroundStyle.isTransparent || store.miniWindowPrefersFullTransparency)
+        !(growthStore.preferredBackgroundStyle.isTransparent || growthStore.isMiniWindowFullyTransparent)
     }
 
-    private func triggerWateringAnimation(duration: Duration = .seconds(1.0)) {
-        withAnimation { isWatering = true }
+    /// Plays a brief cascading droplet animation while watering.
+    private func performWateringAnimation(duration: Duration = .seconds(1.0)) {
+        withAnimation { isWateringAnimationActive = true }
         Task { @MainActor in
             try? await Task.sleep(for: duration)
-            withAnimation { isWatering = false }
+            withAnimation { isWateringAnimationActive = false }
         }
     }
 
+    /// Schedules the next daily reminder once watering completes.
     private func scheduleNextReminder() {
         let now = Date()
-        let nextNine = Calendar.current.nextDate(
+        let nextReminder = Calendar.current.nextDate(
             after: now,
             matching: DateComponents(hour: 9, minute: 0),
             matchingPolicy: .nextTimePreservingSmallerComponents
         ) ?? now.addingTimeInterval(24 * 60 * 60)
-        NotificationService.shared.scheduleCareReminder(at: nextNine)
+        ReminderNotificationService.shared.scheduleCareReminder(at: nextReminder)
     }
 
+    /// Background surface that adapts to the selected theme when transparency is disabled.
     @ViewBuilder
     private var backgroundSurface: some View {
-        switch store.backgroundStyle {
+        switch growthStore.preferredBackgroundStyle {
         case .cozyGradient:
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(LinearGradient(colors: [Color(red: 0.94, green: 0.97, blue: 0.95), Color(red: 0.88, green: 0.94, blue: 0.9)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(LinearGradient(colors: [Color(red: 0.94, green: 0.97, blue: 0.95),
+                                              Color(red: 0.88, green: 0.94, blue: 0.9)],
+                                     startPoint: .topLeading,
+                                     endPoint: .bottomTrailing))
                 .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
         case .softSunrise:
             RoundedRectangle(cornerRadius: 24, style: .continuous)

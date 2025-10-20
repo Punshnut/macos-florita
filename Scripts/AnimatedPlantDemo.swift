@@ -3,70 +3,76 @@
 import SwiftUI
 import AppKit
 
-private enum DemoStage: Double, CaseIterable {
+/// Simplified stage progression used by the standalone demo.
+private enum DemoGrowthPhase: Double, CaseIterable {
     case sprout = 0.4
     case leaves = 0.75
     case blooms = 1.0
 
-    var next: DemoStage {
-        let all = DemoStage.allCases
-        guard let index = all.firstIndex(of: self), index + 1 < all.count else { return .sprout }
-        return all[index + 1]
+    /// Returns the next phase in sequence, looping back to the beginning.
+    var nextPhase: DemoGrowthPhase {
+        let phases = DemoGrowthPhase.allCases
+        guard let index = phases.firstIndex(of: self), index + 1 < phases.count else { return .sprout }
+        return phases[index + 1]
     }
 }
 
 @main
-struct FloritaGrowthDemo: App {
-    @State private var stage: DemoStage = .sprout
+struct FloritaGrowthDemoApp: App {
+    /// Currently showcased demo phase.
+    @State private var currentPhase: DemoGrowthPhase = .sprout
 
     var body: some Scene {
         WindowGroup("Florita Growth Demo") {
-            AnimatedDemoPlant(stage: stage)
+            DemoGrowthCanvas(phase: currentPhase)
                 .frame(width: 320, height: 320)
                 .padding(24)
                 .background(Color(red: 0.94, green: 0.97, blue: 0.96))
-                .onAppear(perform: advanceStage)
+                .onAppear(perform: advancePhasePeriodically)
         }
         .windowStyle(.hiddenTitleBar)
     }
 
-    private func advanceStage() {
+    /// Advances the demo phase every few seconds to showcase the animation.
+    private func advancePhasePeriodically() {
         Task.detached {
             while true {
                 try? await Task.sleep(nanoseconds: 8_000_000_000)
                 await MainActor.run {
-                    stage = stage.next
+                    currentPhase = currentPhase.nextPhase
                 }
             }
         }
     }
 }
 
-private struct AnimatedDemoPlant: View {
-    var stage: DemoStage
-    @State private var animationStart = Date()
+/// Animated rendition of Florita used in the standalone demo app.
+private struct DemoGrowthCanvas: View {
+    var phase: DemoGrowthPhase
+    @State private var animationStartDate = Date()
 
     var body: some View {
         TimelineView(.animation) { context in
             let progress = clampedProgress(for: context.date)
-            DemoPlantScene(progress: progress, time: context.date.timeIntervalSinceReferenceDate, stage: stage)
+            DemoGrowthScene(progress: progress, time: context.date.timeIntervalSinceReferenceDate, phase: phase)
         }
         .aspectRatio(1, contentMode: .fit)
-        .onAppear { animationStart = Date() }
-        .onChange(of: stage) { _, _ in animationStart = Date() }
+        .onAppear { animationStartDate = Date() }
+        .onChange(of: phase) { _, _ in animationStartDate = Date() }
     }
 
     private func clampedProgress(for date: Date) -> CGFloat {
-        guard date >= animationStart else { return 0 }
-        let elapsed = date.timeIntervalSince(animationStart)
+        guard date >= animationStartDate else { return 0 }
+        let elapsed = date.timeIntervalSince(animationStartDate)
         return CGFloat(min(max(elapsed / 6, 0), 1))
     }
 }
 
-private struct DemoPlantScene: View {
+/// Underlying view responsible for drawing the animated demo plant.
+private struct DemoGrowthScene: View {
     let progress: CGFloat
     let time: TimeInterval
-    let stage: DemoStage
+    let phase: DemoGrowthPhase
 
     var body: some View {
         GeometryReader { geometry in
@@ -90,24 +96,24 @@ private struct DemoPlantScene: View {
         }
     }
 
-    private var stageProgress: CGFloat { min(progress, CGFloat(stage.rawValue)) }
+    private var phaseProgress: CGFloat { min(progress, CGFloat(phase.rawValue)) }
 
-    private var stemProgress: CGFloat { min(stageProgress / 0.4, 1) }
+    private var stemProgress: CGFloat { min(phaseProgress / 0.4, 1) }
 
     private var leavesProgress: CGFloat {
-        guard stage != .sprout else { return 0 }
-        let value = (stageProgress - 0.4) / 0.3
+        guard phase != .sprout else { return 0 }
+        let value = (phaseProgress - 0.4) / 0.3
         return min(max(value, 0), 1)
     }
 
     private var bloomProgress: CGFloat {
-        guard stage == .blooms else { return 0 }
-        let value = (stageProgress - 0.75) / 0.25
+        guard phase == .blooms else { return 0 }
+        let value = (phaseProgress - 0.75) / 0.25
         return min(max(value, 0), 1)
     }
 
     private var idleSway: Double {
-        guard stageProgress >= CGFloat(stage.rawValue) else { return 0 }
+        guard phaseProgress >= CGFloat(phase.rawValue) else { return 0 }
         return sin(time / 2.5) * 2.5
     }
 
@@ -161,6 +167,7 @@ private struct DemoPlantScene: View {
     }
 }
 
+/// Stem path used by the demo canvas.
 private struct DemoStemShape: Shape {
     func path(in rect: CGRect) -> Path {
         Path { path in
@@ -171,6 +178,7 @@ private struct DemoStemShape: Shape {
     }
 }
 
+/// Leaf silhouette used by the demo canvas.
 private struct DemoLeafShape: Shape {
     var curve: CGFloat
 
@@ -186,6 +194,7 @@ private struct DemoLeafShape: Shape {
     }
 }
 
+/// Petal path used in the demo bloom.
 private struct DemoPetalShape: Shape {
     func path(in rect: CGRect) -> Path {
         let width = rect.width

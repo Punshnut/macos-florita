@@ -1,31 +1,35 @@
 import SwiftUI
 @main
 struct FloritaApp: App {
-    @StateObject private var store = PlantStore.shared
+    /// Shared store that coordinates growth data and preferences.
+    @StateObject private var growthStore = FloritaGrowthStore.sharedStore
 
+    /// Binding bridging the store's menu bar visibility preference to SwiftUI.
     private var menuBarBinding: Binding<Bool> {
         Binding(
-            get: { store.menuBarIconEnabled },
-            set: { store.menuBarIconEnabled = $0 }
+            get: { growthStore.isMenuBarItemVisible },
+            set: { growthStore.isMenuBarItemVisible = $0 }
         )
     }
 
+    /// Configures all macOS scenes: main dashboard, mini window, settings, and menu bar extra.
     var body: some Scene {
         WindowGroup {
-            ContentView(store: store)
-                .frame(minWidth: store.windowSize.minimumSize.width, minHeight: store.windowSize.minimumSize.height)
+            FloritaDashboardView(growthStore: growthStore)
+                .frame(minWidth: growthStore.preferredWindowSize.minimumSize.width,
+                       minHeight: growthStore.preferredWindowSize.minimumSize.height)
         }
         WindowGroup("Florita Mini", id: "mini") {
-            FloritaMiniView(store: store)
+            FloritaMiniView(growthStore: growthStore)
                 .frame(minWidth: 360, minHeight: 220)
         }
         .defaultSize(width: 360, height: 220)
         .windowResizability(.contentSize)
         Settings {
-            FloritaSettingsView(store: store)
+            FloritaSettingsView(growthStore: growthStore)
         }
         MenuBarExtra("Florita", systemImage: "leaf.fill", isInserted: menuBarBinding) {
-            FloritaMenuBarView(store: store)
+            FloritaMenuBarView(growthStore: growthStore)
                 .frame(width: 240)
         }
         .menuBarExtraStyle(.window)

@@ -1,39 +1,46 @@
 import SwiftUI
-struct ContentView: View {
-    @ObservedObject var store: PlantStore
+
+/// Primary window responsible for presenting Florita's growth state and daily actions.
+struct FloritaDashboardView: View {
+    /// Shared growth store injected by the application entry point.
+    @ObservedObject var growthStore: FloritaGrowthStore
+    /// Window opener used to reveal companion windows.
     @Environment(\.openWindow) private var openWindow
-    @State private var showOnboarding = false
-    @State private var isWatering = false
+    /// Tracks whether the onboarding sheet should currently be visible.
+    @State private var isOnboardingPresented = false
+    /// Toggles the watering drop overlay animation.
+    @State private var isWateringAnimationActive = false
 
     var body: some View {
         ZStack {
-            appBackground
+            appBackdrop
             VStack(spacing: 32) {
-                PlantDisplayView(stage: store.stage, animated: store.prefersAnimatedGraphics)
-                    .overlay(WateringOverlay(isActive: isWatering))
+                FloritaPlantDisplay(growthStage: growthStore.currentGrowthStage,
+                                    isAnimated: growthStore.isAnimationEnabled)
+                    .overlay(WateringAnimationOverlay(isActive: isWateringAnimationActive))
                     .padding(26)
-                    .background(plantCardBackground)
+                    .background(plantCardBackdrop)
                     .clipShape(RoundedRectangle(cornerRadius: 34, style: .continuous))
-                    .overlay(plantCardStroke)
-                    .scaleEffect(isWatering ? 1.02 : 1)
-                    .animation(.spring(response: 0.6, dampingFraction: 0.75), value: isWatering)
+                    .overlay(plantCardBorder)
+                    .scaleEffect(isWateringAnimationActive ? 1.02 : 1)
+                    .animation(.spring(response: 0.6, dampingFraction: 0.75), value: isWateringAnimationActive)
 
                 VStack(spacing: 10) {
-                    Text(statusText)
+                    Text(wateringStatusMessage)
                         .font(.system(.title, design: .rounded, weight: .semibold))
                         .foregroundStyle(Color(red: 0.13, green: 0.31, blue: 0.43))
-                    Text(store.stage.localizedDescription)
+                    Text(growthStore.currentGrowthStage.localizedStageDescription)
                         .font(.body)
                         .foregroundStyle(.secondary)
                 }
                 .multilineTextAlignment(.center)
 
-                Button(action: waterPlant) {
-                    Text(Localization.string("waterButton"))
+                Button(action: handleWateringAction) {
+                    Text(FloritaLocalization.localizedString("waterButton"))
                         .font(.headline)
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
-                        .background(buttonBackground)
+                        .background(wateringButtonBackground)
                         .foregroundStyle(Color.white)
                         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         .overlay(
@@ -42,10 +49,10 @@ struct ContentView: View {
                         )
                 }
                 .buttonStyle(.plain)
-                .disabled(store.hasWateredToday)
-                .opacity(store.hasWateredToday ? 0.65 : 1)
-                .scaleEffect(isWatering ? 0.98 : 1)
-                .animation(.spring(response: 0.4, dampingFraction: 0.65), value: isWatering)
+                .disabled(growthStore.didWaterToday)
+                .opacity(growthStore.didWaterToday ? 0.65 : 1)
+                .scaleEffect(isWateringAnimationActive ? 0.98 : 1)
+                .animation(.spring(response: 0.4, dampingFraction: 0.65), value: isWateringAnimationActive)
 
                 Button(action: { openWindow(id: "mini") }) {
                     Label("Open Florita Mini", systemImage: "rectangle.portrait.on.rectangle.portrait")
@@ -53,7 +60,7 @@ struct ContentView: View {
                         .font(.subheadline)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 18)
-                        .background(miniButtonBackground)
+                        .background(miniWindowButtonBackground)
                         .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -61,45 +68,50 @@ struct ContentView: View {
             .padding(.horizontal, 32)
             .padding(.vertical, 44)
             .frame(maxWidth: 520)
-            hiddenDebugGrowthButton
+            hiddenGrowthAdvanceShortcut
         }
-        .frame(minWidth: store.windowSize.minimumSize.width, minHeight: store.windowSize.minimumSize.height)
-        .background(WindowSizeApplier(targetSize: store.windowSize.minimumSize))
-        .background(WindowTransparencyApplier(isTransparent: store.backgroundStyle.isTransparent))
+        .frame(minWidth: growthStore.preferredWindowSize.minimumSize.width,
+               minHeight: growthStore.preferredWindowSize.minimumSize.height)
+        .background(WindowSizeSynchronizer(targetSize: growthStore.preferredWindowSize.minimumSize))
+        .background(WindowTransparencySynchronizer(isTransparent: growthStore.preferredBackgroundStyle.isTransparent))
         .onAppear {
-            if showOnboarding == false && store.hasCompletedOnboarding == false {
-                showOnboarding = true
+            if isOnboardingPresented == false && growthStore.didCompleteOnboarding == false {
+                isOnboardingPresented = true
             }
-            NotificationService.shared.requestAuthorizationIfNeeded()
+            ReminderNotificationService.shared.requestAuthorizationIfNeeded()
         }
-        .onChange(of: store.hasCompletedOnboarding) { _, completed in
-            showOnboarding = !completed
+        .onChange(of: growthStore.didCompleteOnboarding) { _, completed in
+            isOnboardingPresented = !completed
         }
-        .sheet(isPresented: $showOnboarding) {
-            OnboardingFlowView(isPresented: $showOnboarding, store: store)
+        .sheet(isPresented: $isOnboardingPresented) {
+            OnboardingFlowView(isPresented: $isOnboardingPresented, growthStore: growthStore)
                 .frame(minWidth: 420, minHeight: 360)
         }
     }
 
-    private var statusText: String {
-        store.hasWateredToday ? Localization.string("wateredToday") : Localization.string("notWateredToday")
+    /// Localized message describing today's watering status.
+    private var wateringStatusMessage: String {
+        growthStore.didWaterToday ? FloritaLocalization.localizedString("wateredToday") : FloritaLocalization.localizedString("notWateredToday")
     }
 
-    private var buttonBackground: some View {
+    /// Gradient used for the primary watering button background.
+    private var wateringButtonBackground: some View {
         LinearGradient(colors: [Color(red: 0.09, green: 0.38, blue: 0.63),
                                 Color(red: 0.03, green: 0.26, blue: 0.43)],
                        startPoint: .topLeading,
                        endPoint: .bottomTrailing)
     }
 
-    private var miniButtonBackground: some View {
+    /// Subtle gradient applied to the "Florita Mini" button.
+    private var miniWindowButtonBackground: some View {
         LinearGradient(colors: [Color.white.opacity(0.28), Color.white.opacity(0.08)],
                        startPoint: .topLeading,
                        endPoint: .bottomTrailing)
             .background(Color.white.opacity(0.04))
     }
 
-    private var plantCardBackground: some View {
+    /// Visual background for the plant card container.
+    private var plantCardBackdrop: some View {
         RoundedRectangle(cornerRadius: 34, style: .continuous)
             .fill(
                 LinearGradient(colors: [Color(red: 0.93, green: 0.97, blue: 1.0),
@@ -109,15 +121,17 @@ struct ContentView: View {
             )
     }
 
-    private var plantCardStroke: some View {
+    /// Stroke and drop shadow applied around the plant card.
+    private var plantCardBorder: some View {
         RoundedRectangle(cornerRadius: 34, style: .continuous)
             .stroke(Color.white.opacity(0.35), lineWidth: 1.2)
             .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 
-    private var appBackground: some View {
+    /// Background gradient that tracks the selected window theme.
+    private var appBackdrop: some View {
         Group {
-            switch store.backgroundStyle {
+            switch growthStore.preferredBackgroundStyle {
             case .cozyGradient:
                 LinearGradient(colors: [Color(red: 0.82, green: 0.94, blue: 0.99),
                                         Color(red: 0.92, green: 0.98, blue: 0.96)],
@@ -188,43 +202,49 @@ struct ContentView: View {
         .ignoresSafeArea()
     }
 
-    private func waterPlant() {
-        let didWater = store.waterToday()
-        guard didWater else { return }
-        triggerWateringAnimation()
-        scheduleNextReminder()
+    /// Handles the watering button tap, updating state and scheduling reminders.
+    private func handleWateringAction() {
+        guard growthStore.registerDailyWatering() else { return }
+        animateWateringSequence()
+        scheduleNextCareReminder()
     }
 
-    private func triggerWateringAnimation(duration: Duration = .seconds(1.1)) {
+    /// Runs a short animation to highlight the watering interaction.
+    /// - Parameter duration: Duration the overlay remains visible.
+    private func animateWateringSequence(duration: Duration = .seconds(1.1)) {
         withAnimation {
-            isWatering = true
+            isWateringAnimationActive = true
         }
         Task { @MainActor in
             try? await Task.sleep(for: duration)
             withAnimation {
-                isWatering = false
+                isWateringAnimationActive = false
             }
         }
     }
 
-    private func scheduleNextReminder() {
+    /// Schedules the next gentle care reminder notification.
+    private func scheduleNextCareReminder() {
         let now = Date()
-        let nextNine = Calendar.current.nextDate(
+        let nineAMComponents = DateComponents(hour: 9, minute: 0)
+        let nextReminder = Calendar.current.nextDate(
             after: now,
-            matching: DateComponents(hour: 9, minute: 0),
+            matching: nineAMComponents,
             matchingPolicy: .nextTimePreservingSmallerComponents
         ) ?? now.addingTimeInterval(24 * 60 * 60)
-        NotificationService.shared.scheduleCareReminder(at: nextNine)
+        ReminderNotificationService.shared.scheduleCareReminder(at: nextReminder)
     }
 
-    private func debugAdvanceGrowth() {
-        store.advanceGrowthForDebug()
-        triggerWateringAnimation(duration: .seconds(0.9))
+    /// Hidden accelerator used during development to bump the growth stage.
+    private func simulateGrowthAdvance() {
+        growthStore.simulateGrowthForDebugging()
+        animateWateringSequence(duration: .seconds(0.9))
     }
 
+    /// Invisible button wired to the debug keyboard shortcut.
     @ViewBuilder
-    private var hiddenDebugGrowthButton: some View {
-        Button(action: debugAdvanceGrowth) {
+    private var hiddenGrowthAdvanceShortcut: some View {
+        Button(action: simulateGrowthAdvance) {
             EmptyView()
         }
         .keyboardShortcut("g", modifiers: [.command, .option])
@@ -235,9 +255,9 @@ struct ContentView: View {
 }
 
 #if DEBUG
-struct ContentView_Previews: PreviewProvider {
+struct FloritaDashboardView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(store: PlantStore())
+        FloritaDashboardView(growthStore: FloritaGrowthStore())
             .frame(width: 480, height: 600)
     }
 }

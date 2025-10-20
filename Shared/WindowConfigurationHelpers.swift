@@ -3,7 +3,9 @@ import SwiftUI
 #if os(macOS)
 import AppKit
 
-struct WindowSizeApplier: NSViewRepresentable {
+/// Synchronizes the SwiftUI scene size with the user's preferred window dimensions.
+struct WindowSizeSynchronizer: NSViewRepresentable {
+    /// Target window size that should be enforced.
     let targetSize: CGSize
 
     final class Coordinator {
@@ -29,6 +31,7 @@ struct WindowSizeApplier: NSViewRepresentable {
         }
     }
 
+    /// Applies the preferred size once the window reference is available.
     private func applySizeIfPossible(from view: NSView, coordinator: Coordinator) {
         guard let window = view.window else { return }
         let currentSize = window.contentLayoutRect.size
@@ -42,7 +45,9 @@ struct WindowSizeApplier: NSViewRepresentable {
     }
 }
 
-struct WindowTransparencyApplier: NSViewRepresentable {
+/// Propagates the transparency preference to the host NSWindow.
+struct WindowTransparencySynchronizer: NSViewRepresentable {
+    /// Indicates whether the window should become fully transparent.
     let isTransparent: Bool
 
     final class Coordinator {
@@ -68,6 +73,7 @@ struct WindowTransparencyApplier: NSViewRepresentable {
         }
     }
 
+    /// Applies the preferred transparency once a window is available.
     private func applyTransparencyIfPossible(from view: NSView, coordinator: Coordinator) {
         guard let window = view.window else { return }
         guard coordinator.lastTransparency != isTransparent else { return }
@@ -84,7 +90,7 @@ struct WindowTransparencyApplier: NSViewRepresentable {
     }
 }
 #else
-struct WindowSizeApplier: View {
+struct WindowSizeSynchronizer: View {
     let targetSize: CGSize
 
     var body: some View {
@@ -92,7 +98,7 @@ struct WindowSizeApplier: View {
     }
 }
 
-struct WindowTransparencyApplier: View {
+struct WindowTransparencySynchronizer: View {
     let isTransparent: Bool
 
     var body: some View {

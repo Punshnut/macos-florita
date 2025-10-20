@@ -2,53 +2,61 @@ import SwiftUI
 
 /// Shape-driven plant views (static + animated) ready to swap with custom artwork later on.
 
-struct PlantCanvas: View {
-    var stage: PlantStage
+/// Static illustration of Florita tailored to the current growth stage.
+struct StaticGrowthCanvas: View {
+    /// Stage that determines which layers should be rendered.
+    var growthStage: FloritaGrowthStage
 
     var body: some View {
         GeometryReader { geometry in
-            let size = geometry.size
-            let layers = PlantSceneLayers(stage: stage)
+            let canvasSize = geometry.size
+            let layerFactory = GrowthSceneLayers(growthStage: growthStage)
             ZStack {
-                layers.backgroundBase()
-                layers.lightRaysLayer(size: size, time: nil)
-                layers.skyLayer(size: size, time: nil)
-                layers.soilShadow(size: size)
-                layers.soilLayer(size: size)
-                layers.stemLayer(size: size, sway: 0, growth: 1)
-                if stage != .sprout {
-                    layers.leavesLayer(size: size, growth: 1, sway: 0)
+                layerFactory.makeBackgroundBaseLayer()
+                layerFactory.makeLightRayLayer(size: canvasSize, time: nil)
+                layerFactory.makeSkyLayer(size: canvasSize, time: nil)
+                layerFactory.makeSoilShadowLayer(size: canvasSize)
+                layerFactory.makeSoilLayer(size: canvasSize)
+                layerFactory.makeStemLayer(size: canvasSize, sway: 0, growth: 1)
+                if growthStage != .sprout {
+                    layerFactory.makeLeafLayer(size: canvasSize, growth: 1, sway: 0)
                 }
-                if stage == .blooms {
-                    layers.bloomLayer(size: size, growth: 1, sway: 0, time: nil)
+                if growthStage == .blooms {
+                    layerFactory.makeBloomLayer(size: canvasSize, growth: 1, sway: 0, time: nil)
                 }
-                layers.foregroundPebbles(size: size)
+                layerFactory.makeForegroundPebbleLayer(size: canvasSize)
             }
         }
         .aspectRatio(1, contentMode: .fit)
-        .accessibilityLabel(stage.localizedDescription)
+        .accessibilityLabel(growthStage.localizedStageDescription)
     }
 }
 
-struct AnimatedPlantCanvas: View {
-    var stage: PlantStage
-    @State private var animationStart = Date()
+/// Animated canvas that gradually grows Florita and adds subtle motion.
+struct AnimatedGrowthCanvas: View {
+    /// Stage that drives the number of layers and animation limits.
+    var growthStage: FloritaGrowthStage
+    /// Reference date used to compute progress within the looped animation.
+    @State private var animationStartDate = Date()
 
     var body: some View {
         TimelineView(.animation) { timeline in
-            PlantAnimationScene(date: timeline.date, stage: stage, animationStart: animationStart)
+            AnimatedGrowthScene(date: timeline.date,
+                                growthStage: growthStage,
+                                animationStartDate: animationStartDate)
         }
         .aspectRatio(1, contentMode: .fit)
-        .accessibilityLabel(stage.localizedDescription)
-        .onAppear { animationStart = Date() }
-        .onChange(of: stage) { _, _ in animationStart = Date() }
+        .accessibilityLabel(growthStage.localizedStageDescription)
+        .onAppear { animationStartDate = Date() }
+        .onChange(of: growthStage) { _, _ in animationStartDate = Date() }
     }
 }
 
-private struct PlantAnimationScene: View {
+/// Underlying scene used by the animated canvas to compute progressive growth.
+private struct AnimatedGrowthScene: View {
     let date: Date
-    let stage: PlantStage
-    let animationStart: Date
+    let growthStage: FloritaGrowthStage
+    let animationStartDate: Date
 
     private var elapsed: TimeInterval { max(date.timeIntervalSince(animationStart), 0) }
     private var progress: CGFloat {
@@ -58,38 +66,40 @@ private struct PlantAnimationScene: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let size = geometry.size
-            let layers = PlantSceneLayers(stage: stage)
-            let stageProgress = min(progress, stage.animationCap)
+            let canvasSize = geometry.size
+            let layerFactory = GrowthSceneLayers(growthStage: growthStage)
+            let stageProgress = min(progress, growthStage.animationCap)
             let stemGrowth = ease((stageProgress / 0.4).clamped())
-            let leavesGrowth = stage != .sprout ? ease(((stageProgress - 0.4) / 0.3).clamped()) : 0
-            let bloomGrowth = stage == .blooms ? ease(((stageProgress - 0.75) / 0.25).clamped()) : 0
-            let sway: Double = stageProgress >= stage.animationCap ? sin(elapsed / 3.0) * 2.2 : 0
+            let leavesGrowth = growthStage != .sprout ? ease(((stageProgress - 0.4) / 0.3).clamped()) : 0
+            let bloomGrowth = growthStage == .blooms ? ease(((stageProgress - 0.75) / 0.25).clamped()) : 0
+            let sway: Double = stageProgress >= growthStage.animationCap ? sin(elapsed / 3.0) * 2.2 : 0
 
             ZStack {
-                layers.backgroundBase()
-                layers.lightRaysLayer(size: size, time: elapsed)
-                layers.skyLayer(size: size, time: elapsed)
-                layers.soilShadow(size: size)
-                layers.soilLayer(size: size)
-                layers.stemLayer(size: size, sway: sway, growth: stemGrowth)
+                layerFactory.makeBackgroundBaseLayer()
+                layerFactory.makeLightRayLayer(size: canvasSize, time: elapsed)
+                layerFactory.makeSkyLayer(size: canvasSize, time: elapsed)
+                layerFactory.makeSoilShadowLayer(size: canvasSize)
+                layerFactory.makeSoilLayer(size: canvasSize)
+                layerFactory.makeStemLayer(size: canvasSize, sway: sway, growth: stemGrowth)
                 if leavesGrowth > 0 {
-                    layers.leavesLayer(size: size, growth: leavesGrowth, sway: sway)
+                    layerFactory.makeLeafLayer(size: canvasSize, growth: leavesGrowth, sway: sway)
                 }
                 if bloomGrowth > 0 {
-                    layers.bloomLayer(size: size, growth: bloomGrowth, sway: sway, time: elapsed)
+                    layerFactory.makeBloomLayer(size: canvasSize, growth: bloomGrowth, sway: sway, time: elapsed)
                 }
-                layers.foregroundPebbles(size: size)
+                layerFactory.makeForegroundPebbleLayer(size: canvasSize)
             }
-            .animation(.easeInOut(duration: 0.6), value: stage)
+            .animation(.easeInOut(duration: 0.6), value: growthStage)
         }
     }
 }
 
-private struct PlantSceneLayers {
-    var stage: PlantStage
+/// Factory that generates all individual shape layers composing the plant illustration.
+private struct GrowthSceneLayers {
+    let growthStage: FloritaGrowthStage
 
-    func backgroundBase() -> some View {
+    /// Base rounded rectangle background that everything sits upon.
+    func makeBackgroundBaseLayer() -> some View {
         RoundedRectangle(cornerRadius: 28, style: .continuous)
             .fill(
                 LinearGradient(colors: [Color(red: 0.86, green: 0.95, blue: 0.99),
@@ -104,7 +114,8 @@ private struct PlantSceneLayers {
             .shadow(color: Color.black.opacity(0.06), radius: 10, x: 0, y: 6)
     }
 
-    func lightRaysLayer(size: CGSize, time: TimeInterval?) -> some View {
+    /// Emits rotating light rays that add atmospheric motion.
+    func makeLightRayLayer(size: CGSize, time: TimeInterval?) -> some View {
         let animatedAngle = Angle.degrees((time ?? 0) * 6)
         return ZStack {
             ForEach(0..<8) { index in
@@ -126,7 +137,8 @@ private struct PlantSceneLayers {
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
-    func skyLayer(size: CGSize, time: TimeInterval?) -> some View {
+    /// Paints animated sky gradients and clouds.
+    func makeSkyLayer(size: CGSize, time: TimeInterval?) -> some View {
         let drift = CGFloat(sin((time ?? 0) / 5.0)) * 16
         let glowPulse = 0.15 + 0.1 * sin((time ?? 0) / 4.0)
         return ZStack {
@@ -141,14 +153,16 @@ private struct PlantSceneLayers {
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
-    func soilShadow(size: CGSize) -> some View {
+    /// Subtle shadow that grounds the soil layer.
+    func makeSoilShadowLayer(size: CGSize) -> some View {
         Ellipse()
             .fill(Color.black.opacity(0.08))
             .frame(width: size.width * 0.6, height: size.height * 0.15)
             .position(x: size.width / 2, y: size.height * 0.84)
     }
 
-    func soilLayer(size: CGSize) -> some View {
+    /// Root-level planter built from rounded rectangles and gradients.
+    func makeSoilLayer(size: CGSize) -> some View {
         RoundedRectangle(cornerRadius: 20, style: .continuous)
             .fill(LinearGradient(colors: [Color(red: 0.62, green: 0.46, blue: 0.34), Color(red: 0.43, green: 0.32, blue: 0.24)], startPoint: .top, endPoint: .bottom))
             .overlay {
@@ -159,7 +173,8 @@ private struct PlantSceneLayers {
             .position(x: size.width / 2, y: size.height * 0.82)
     }
 
-    func stemLayer(size: CGSize, sway: Double, growth: CGFloat) -> some View {
+    /// Main stem that grows and sways with the animation.
+    func makeStemLayer(size: CGSize, sway: Double, growth: CGFloat) -> some View {
         StemShape()
             .trim(from: 0, to: growth)
             .stroke(style: StrokeStyle(lineWidth: size.width * 0.035, lineCap: .round))
@@ -169,7 +184,8 @@ private struct PlantSceneLayers {
             .rotationEffect(.degrees(sway * 0.18))
     }
 
-    func leavesLayer(size: CGSize, growth: CGFloat, sway: Double) -> some View {
+    /// Composite leaf layer comprised of multiple reusable leaf shapes.
+    func makeLeafLayer(size: CGSize, growth: CGFloat, sway: Double) -> some View {
         let specs: [LeafSpec] = [
             LeafSpec(position: CGPoint(x: 0.34, y: 0.64),
                      size: CGSize(width: 0.28, height: 0.19),
@@ -261,6 +277,7 @@ private struct PlantSceneLayers {
         return ease(progress)
     }
 
+    /// Metadata describing positioning for an individual leaf.
     private struct LeafSpec {
         let position: CGPoint
         let size: CGSize
@@ -273,6 +290,7 @@ private struct PlantSceneLayers {
         let tone: LeafTone
     }
 
+    /// Palette options for the different leaf variations.
     private enum LeafTone {
         case emerald
         case jade
@@ -280,6 +298,7 @@ private struct PlantSceneLayers {
         case mint
     }
 
+    /// Eases bloom growth based on staged start/stop offsets.
     private func stagedBloomGrowth(global: CGFloat, start: CGFloat, span: CGFloat) -> CGFloat {
         guard span > 0 else {
             return global >= start ? 1 : 0
@@ -288,6 +307,7 @@ private struct PlantSceneLayers {
         return ease(progress)
     }
 
+    /// Configuration metadata for each tulip bloom.
     private struct TulipSpec {
         let base: CGPoint
         let size: CGSize
@@ -300,13 +320,15 @@ private struct PlantSceneLayers {
         let palette: TulipPalette
     }
 
+    /// Available color palettes for the blooming flowers.
     private enum TulipPalette {
         case sunrise
         case orchid
         case violet
     }
 
-    func bloomLayer(size: CGSize, growth: CGFloat, sway: Double, time: TimeInterval?) -> some View {
+    /// Blooming flower layer that emerges at the final growth stage.
+    func makeBloomLayer(size: CGSize, growth: CGFloat, sway: Double, time: TimeInterval?) -> some View {
         let specs: [TulipSpec] = [
             TulipSpec(base: CGPoint(x: 0.5, y: 0.34),
                       size: CGSize(width: 0.22, height: 0.28),
@@ -392,7 +414,8 @@ private struct PlantSceneLayers {
         }
     }
 
-    func foregroundPebbles(size: CGSize) -> some View {
+    /// Decorative pebbles layered over the soil to add depth.
+    func makeForegroundPebbleLayer(size: CGSize) -> some View {
         let pebble = Capsule(style: .continuous)
         return ZStack {
             pebble.fill(Color(red: 0.72, green: 0.62, blue: 0.5).opacity(0.6))
@@ -407,6 +430,7 @@ private struct PlantSceneLayers {
         }
     }
 
+    /// Helper that renders a stylized cloud shape.
     private func cloud(at point: CGPoint, scale: CGFloat) -> some View {
         ZStack {
             Capsule()
@@ -424,6 +448,7 @@ private struct PlantSceneLayers {
         .position(point)
     }
 
+    /// Gradient values corresponding to each leaf tone.
     private func leafGradient(tone: LeafTone) -> LinearGradient {
         switch tone {
         case .emerald:
@@ -449,6 +474,7 @@ private struct PlantSceneLayers {
         }
     }
 
+    /// Gradient values corresponding to each tulip palette.
     private func tulipGradient(palette: TulipPalette) -> LinearGradient {
         switch palette {
         case .sunrise:
@@ -471,6 +497,7 @@ private struct PlantSceneLayers {
 
 }
 
+/// Procedural bezier describing Florita's stem.
 private struct StemShape: Shape {
     func path(in rect: CGRect) -> Path {
         Path { path in
@@ -481,6 +508,7 @@ private struct StemShape: Shape {
     }
 }
 
+/// Organic leaf silhouette with adjustable curvature.
 private struct LeafShape: Shape {
     var curve: CGFloat
 
@@ -509,6 +537,7 @@ private struct LeafShape: Shape {
     }
 }
 
+/// Profile used for the blooming flower.
 private struct TulipShape: Shape {
     func path(in rect: CGRect) -> Path {
         let width = rect.width
@@ -537,7 +566,7 @@ private struct TulipShape: Shape {
     }
 }
 
-private extension PlantStage {
+private extension FloritaGrowthStage {
     var animationCap: CGFloat {
         switch self {
         case .sprout:
@@ -550,25 +579,27 @@ private extension PlantStage {
     }
 }
 
+/// Convenience clamp helper used by shape animations.
 private extension CGFloat {
     func clamped(to range: ClosedRange<CGFloat> = 0...1) -> CGFloat {
         Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
     }
 }
 
+/// Smoothstep easing curve used throughout the illustration.
 private func ease(_ value: CGFloat) -> CGFloat {
     let x = value.clamped()
     return x * x * (3 - 2 * x)
 }
 
 #if DEBUG
-struct PlantCanvas_Previews: PreviewProvider {
+struct StaticGrowthCanvas_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            PlantCanvas(stage: .sprout)
-            PlantCanvas(stage: .leaves)
-            PlantCanvas(stage: .blooms)
-            AnimatedPlantCanvas(stage: .blooms)
+            StaticGrowthCanvas(growthStage: .sprout)
+            StaticGrowthCanvas(growthStage: .leaves)
+            StaticGrowthCanvas(growthStage: .blooms)
+            AnimatedGrowthCanvas(growthStage: .blooms)
         }
         .padding()
         .previewLayout(.fixed(width: 240, height: 240))

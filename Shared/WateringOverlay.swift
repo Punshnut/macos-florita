@@ -1,6 +1,8 @@
 import SwiftUI
 
-struct WateringOverlay: View {
+/// Adds a rain-drop overlay when Florita is being watered.
+struct WateringAnimationOverlay: View {
+    /// Controls whether droplets should be rendered.
     var isActive: Bool
 
     var body: some View {
@@ -10,20 +12,25 @@ struct WateringOverlay: View {
                 let dropletCount = 12
                 for index in 0..<dropletCount {
                     let progress = Double(index) / Double(dropletCount)
-                    let x = size.width * CGFloat(progress)
-                    let randomOffset = sin(progress * .pi * 4) * 12
+                    let xPosition = size.width * CGFloat(progress)
+                    let swayOffset = sin(progress * .pi * 4) * 12
                     var droplet = Path()
-                    droplet.addRoundedRect(in: CGRect(x: x + randomOffset,
+                    droplet.addRoundedRect(in: CGRect(x: xPosition + swayOffset,
                                                       y: size.height * CGFloat(progress) * 0.6,
                                                       width: 6,
-                                                      height: 14), cornerSize: CGSize(width: 3, height: 4))
+                                                      height: 14),
+                                           cornerSize: CGSize(width: 3, height: 4))
                     context.opacity = 0.6 - progress * 0.4
-                    context.fill(droplet, with: .radialGradient(
-                        Gradient(colors: [Color(red: 0.68, green: 0.86, blue: 0.94), Color(red: 0.43, green: 0.72, blue: 0.85).opacity(0.2)]),
-                        center: CGPoint(x: droplet.boundingRect.midX, y: droplet.boundingRect.midY),
-                        startRadius: 0,
-                        endRadius: 10
-                    ))
+                    context.fill(
+                        droplet,
+                        with: .radialGradient(
+                            Gradient(colors: [Color(red: 0.68, green: 0.86, blue: 0.94),
+                                              Color(red: 0.43, green: 0.72, blue: 0.85).opacity(0.2)]),
+                            center: CGPoint(x: droplet.boundingRect.midX, y: droplet.boundingRect.midY),
+                            startRadius: 0,
+                            endRadius: 10
+                        )
+                    )
                 }
             }
         }

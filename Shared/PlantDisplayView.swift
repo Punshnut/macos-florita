@@ -1,15 +1,18 @@
 import SwiftUI
 
-struct PlantDisplayView: View {
-    var stage: PlantStage
-    var animated: Bool
+/// Wrapper view that chooses between animated and static plant artwork.
+struct FloritaPlantDisplay: View {
+    /// Growth stage to render.
+    var growthStage: FloritaGrowthStage
+    /// Flag determining whether the animated illustration should be used.
+    var isAnimated: Bool
 
     var body: some View {
         Group {
-            if animated {
-                AnimatedPlantCanvas(stage: stage)
+            if isAnimated {
+                AnimatedGrowthCanvas(growthStage: growthStage)
             } else {
-                PlantCanvas(stage: stage)
+                StaticGrowthCanvas(growthStage: growthStage)
             }
         }
     }

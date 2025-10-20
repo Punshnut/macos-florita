@@ -170,43 +170,226 @@ private struct PlantSceneLayers {
     }
 
     func leavesLayer(size: CGSize, growth: CGFloat, sway: Double) -> some View {
-        ZStack {
-            LeafShape(curve: 1.0)
-                .fill(leafGradient(primary: true))
-                .frame(width: size.width * 0.28, height: size.height * 0.18)
-                .position(x: size.width * 0.38, y: size.height * 0.5)
-                .rotationEffect(.degrees(-18 + sway * 0.45))
-                .scaleEffect(growth * 0.9 + 0.1, anchor: .trailing)
-                .opacity(Double(growth))
-            LeafShape(curve: -1.0)
-                .fill(leafGradient(primary: false))
-                .frame(width: size.width * 0.28, height: size.height * 0.18)
-                .position(x: size.width * 0.62, y: size.height * 0.48)
-                .rotationEffect(.degrees(18 - sway * 0.45))
-                .scaleEffect(growth * 0.9 + 0.1, anchor: .leading)
-                .opacity(Double(growth))
+        let specs: [LeafSpec] = [
+            LeafSpec(position: CGPoint(x: 0.34, y: 0.64),
+                     size: CGSize(width: 0.28, height: 0.19),
+                     anchor: .trailing,
+                     baseRotation: -34,
+                     swayMultiplier: 0.55,
+                     curve: 1.05,
+                     start: 0.0,
+                     span: 0.3,
+                     tone: .emerald),
+            LeafSpec(position: CGPoint(x: 0.66, y: 0.63),
+                     size: CGSize(width: 0.28, height: 0.19),
+                     anchor: .leading,
+                     baseRotation: 34,
+                     swayMultiplier: -0.55,
+                     curve: -1.05,
+                     start: 0.0,
+                     span: 0.3,
+                     tone: .jade),
+            LeafSpec(position: CGPoint(x: 0.42, y: 0.5),
+                     size: CGSize(width: 0.32, height: 0.21),
+                     anchor: .trailing,
+                     baseRotation: -20,
+                     swayMultiplier: 0.4,
+                     curve: 0.85,
+                     start: 0.22,
+                     span: 0.32,
+                     tone: .jade),
+            LeafSpec(position: CGPoint(x: 0.58, y: 0.48),
+                     size: CGSize(width: 0.32, height: 0.21),
+                     anchor: .leading,
+                     baseRotation: 22,
+                     swayMultiplier: -0.4,
+                     curve: -0.85,
+                     start: 0.22,
+                     span: 0.32,
+                     tone: .forest),
+            LeafSpec(position: CGPoint(x: 0.4, y: 0.4),
+                     size: CGSize(width: 0.26, height: 0.18),
+                     anchor: .trailing,
+                     baseRotation: -12,
+                     swayMultiplier: 0.3,
+                     curve: 0.6,
+                     start: 0.48,
+                     span: 0.3,
+                     tone: .forest),
+            LeafSpec(position: CGPoint(x: 0.6, y: 0.38),
+                     size: CGSize(width: 0.26, height: 0.18),
+                     anchor: .leading,
+                     baseRotation: 14,
+                     swayMultiplier: -0.3,
+                     curve: -0.6,
+                     start: 0.48,
+                     span: 0.3,
+                     tone: .emerald),
+            LeafSpec(position: CGPoint(x: 0.5, y: 0.35),
+                     size: CGSize(width: 0.23, height: 0.17),
+                     anchor: .bottom,
+                     baseRotation: 0,
+                     swayMultiplier: 0.18,
+                     curve: 0,
+                     start: 0.62,
+                     span: 0.28,
+                     tone: .mint)
+        ]
+
+        return ZStack {
+            ForEach(Array(specs.enumerated()), id: \.offset) { index, spec in
+                let localGrowth = stagedLeafGrowth(global: growth, start: spec.start, span: spec.span)
+                if localGrowth > 0 {
+                    LeafShape(curve: spec.curve)
+                        .fill(leafGradient(tone: spec.tone))
+                        .frame(width: size.width * spec.size.width, height: size.height * spec.size.height)
+                        .position(x: size.width * spec.position.x, y: size.height * spec.position.y)
+                        .rotationEffect(.degrees(spec.baseRotation + sway * spec.swayMultiplier))
+                        .scaleEffect(0.25 + 0.75 * localGrowth, anchor: spec.anchor)
+                        .opacity(Double(localGrowth))
+                        .zIndex(Double(index))
+                }
+            }
         }
     }
 
-    func bloomLayer(size: CGSize, growth: CGFloat, sway: Double, time: TimeInterval?) -> some View {
-        let phase = sin((time ?? 0) / 2.5) * 4
-        return ZStack {
-            ForEach(0..<5) { index in
-                PetalShape()
-                    .fill(petalGradient(index: index))
-                    .frame(width: size.width * 0.26, height: size.height * 0.26)
-                    .rotationEffect(.degrees(Double(index) * 72 + phase))
-                    .scaleEffect(growth * 0.9 + 0.1, anchor: .center)
-                    .opacity(Double(growth))
-            }
-            Circle()
-                .fill(Color(red: 0.99, green: 0.88, blue: 0.62))
-                .frame(width: size.width * 0.18, height: size.width * 0.18)
-                .scaleEffect(growth * 0.9 + 0.1)
-                .shadow(color: Color(red: 0.99, green: 0.88, blue: 0.62).opacity(0.35), radius: 8, x: 0, y: 0)
+    private func stagedLeafGrowth(global: CGFloat, start: CGFloat, span: CGFloat) -> CGFloat {
+        guard span > 0 else {
+            return global >= start ? 1 : 0
         }
-        .position(x: size.width / 2, y: size.height * 0.28)
-        .rotationEffect(.degrees(sway))
+        let progress = ((global - start) / span).clamped()
+        return ease(progress)
+    }
+
+    private struct LeafSpec {
+        let position: CGPoint
+        let size: CGSize
+        let anchor: UnitPoint
+        let baseRotation: Double
+        let swayMultiplier: Double
+        let curve: CGFloat
+        let start: CGFloat
+        let span: CGFloat
+        let tone: LeafTone
+    }
+
+    private enum LeafTone {
+        case emerald
+        case jade
+        case forest
+        case mint
+    }
+
+    private func stagedBloomGrowth(global: CGFloat, start: CGFloat, span: CGFloat) -> CGFloat {
+        guard span > 0 else {
+            return global >= start ? 1 : 0
+        }
+        let progress = ((global - start) / span).clamped()
+        return ease(progress)
+    }
+
+    private struct TulipSpec {
+        let base: CGPoint
+        let size: CGSize
+        let stemHeight: CGFloat
+        let stemWidth: CGFloat
+        let start: CGFloat
+        let span: CGFloat
+        let tilt: Double
+        let swayMultiplier: Double
+        let palette: TulipPalette
+    }
+
+    private enum TulipPalette {
+        case sunrise
+        case orchid
+        case violet
+    }
+
+    func bloomLayer(size: CGSize, growth: CGFloat, sway: Double, time: TimeInterval?) -> some View {
+        let specs: [TulipSpec] = [
+            TulipSpec(base: CGPoint(x: 0.5, y: 0.34),
+                      size: CGSize(width: 0.22, height: 0.28),
+                      stemHeight: 0.16,
+                      stemWidth: 0.02,
+                      start: 0.0,
+                      span: 0.35,
+                      tilt: 0,
+                      swayMultiplier: 0.25,
+                      palette: .sunrise),
+            TulipSpec(base: CGPoint(x: 0.4, y: 0.36),
+                      size: CGSize(width: 0.2, height: 0.25),
+                      stemHeight: 0.18,
+                      stemWidth: 0.018,
+                      start: 0.28,
+                      span: 0.34,
+                      tilt: -6,
+                      swayMultiplier: 0.35,
+                      palette: .orchid),
+            TulipSpec(base: CGPoint(x: 0.6, y: 0.35),
+                      size: CGSize(width: 0.2, height: 0.25),
+                      stemHeight: 0.17,
+                      stemWidth: 0.018,
+                      start: 0.56,
+                      span: 0.34,
+                      tilt: 7,
+                      swayMultiplier: -0.32,
+                      palette: .violet)
+        ]
+
+        let stemGradient = LinearGradient(colors: [Color(red: 0.37, green: 0.64, blue: 0.34),
+                                                   Color(red: 0.29, green: 0.55, blue: 0.3)],
+                                          startPoint: .bottom,
+                                          endPoint: .top)
+
+        return ZStack {
+            ForEach(Array(specs.enumerated()), id: \.offset) { index, spec in
+                let bloomProgress = stagedBloomGrowth(global: growth, start: spec.start, span: spec.span)
+                if bloomProgress > 0 {
+                    let centerX = size.width * spec.base.x
+                    let baseY = size.height * spec.base.y
+                    let stemHeight = size.height * spec.stemHeight
+                    let stemWidth = size.width * spec.stemWidth
+                    let flowerHeight = size.height * spec.size.height
+                    let flowerWidth = size.width * spec.size.width
+                    let stemScale = 0.35 + 0.65 * bloomProgress
+                    let bloomScale = 0.35 + 0.65 * bloomProgress
+                    let swayContribution = sway * spec.swayMultiplier
+                    let bob = sin((time ?? 0) / 1.8 + Double(index) * 0.9) * Double(bloomProgress) * 1.8
+                    let stemTopY = baseY - stemHeight * stemScale
+
+                    Capsule(style: .continuous)
+                        .fill(stemGradient)
+                        .frame(width: stemWidth, height: stemHeight)
+                        .scaleEffect(x: 1, y: stemScale, anchor: .bottom)
+                        .rotationEffect(.degrees(spec.tilt + swayContribution * 0.6), anchor: .bottom)
+                        .position(x: centerX, y: baseY)
+                        .opacity(Double(bloomProgress))
+
+                    TulipShape()
+                        .fill(tulipGradient(palette: spec.palette))
+                        .frame(width: flowerWidth, height: flowerHeight)
+                        .scaleEffect(bloomScale, anchor: .bottom)
+                        .rotationEffect(.degrees(spec.tilt + swayContribution * 1.1 + bob * 0.35), anchor: .bottom)
+                        .position(x: centerX, y: stemTopY)
+                        .opacity(Double(bloomProgress))
+                        .overlay(
+                            TulipShape()
+                                .stroke(Color.white.opacity(0.18), lineWidth: size.width * 0.006)
+                        )
+                        .overlay(
+                            RadialGradient(colors: [Color.white.opacity(0.35), Color.white.opacity(0)],
+                                           center: .topLeading,
+                                           startRadius: 0,
+                                           endRadius: max(flowerWidth, flowerHeight) * 0.6)
+                                .opacity(Double(bloomProgress) * 0.7)
+                                .mask(TulipShape())
+                        )
+                        .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
+                        .zIndex(Double(index) + 1)
+                }
+            }
+        }
     }
 
     func foregroundPebbles(size: CGSize) -> some View {
@@ -241,20 +424,51 @@ private struct PlantSceneLayers {
         .position(point)
     }
 
-    private func leafGradient(primary: Bool) -> LinearGradient {
-        if primary {
-            return LinearGradient(colors: [Color(red: 0.54, green: 0.78, blue: 0.48), Color(red: 0.33, green: 0.62, blue: 0.36)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        } else {
-            return LinearGradient(colors: [Color(red: 0.44, green: 0.74, blue: 0.41), Color(red: 0.29, green: 0.58, blue: 0.33)], startPoint: .topLeading, endPoint: .bottomTrailing)
+    private func leafGradient(tone: LeafTone) -> LinearGradient {
+        switch tone {
+        case .emerald:
+            return LinearGradient(colors: [Color(red: 0.54, green: 0.8, blue: 0.46),
+                                           Color(red: 0.32, green: 0.63, blue: 0.34)],
+                                  startPoint: .topLeading,
+                                  endPoint: .bottomTrailing)
+        case .jade:
+            return LinearGradient(colors: [Color(red: 0.48, green: 0.76, blue: 0.44),
+                                           Color(red: 0.29, green: 0.6, blue: 0.34)],
+                                  startPoint: .topLeading,
+                                  endPoint: .bottomTrailing)
+        case .forest:
+            return LinearGradient(colors: [Color(red: 0.41, green: 0.66, blue: 0.37),
+                                           Color(red: 0.25, green: 0.5, blue: 0.29)],
+                                  startPoint: .topLeading,
+                                  endPoint: .bottomTrailing)
+        case .mint:
+            return LinearGradient(colors: [Color(red: 0.64, green: 0.86, blue: 0.58),
+                                          Color(red: 0.44, green: 0.71, blue: 0.42)],
+                                  startPoint: .topLeading,
+                                  endPoint: .bottomTrailing)
         }
     }
 
-    private func petalGradient(index: Int) -> AngularGradient {
-        let hue = Double(index) * 0.05
-        let colors = [Color(hue: 0.97 + hue, saturation: 0.45, brightness: 0.98),
-                      Color(hue: 0.9 + hue, saturation: 0.55, brightness: 0.9)]
-        return AngularGradient(colors: colors, center: .center)
+    private func tulipGradient(palette: TulipPalette) -> LinearGradient {
+        switch palette {
+        case .sunrise:
+            return LinearGradient(colors: [Color(red: 0.99, green: 0.82, blue: 0.48),
+                                           Color(red: 0.94, green: 0.49, blue: 0.35)],
+                                  startPoint: .top,
+                                  endPoint: .bottom)
+        case .orchid:
+            return LinearGradient(colors: [Color(red: 0.96, green: 0.7, blue: 0.82),
+                                           Color(red: 0.79, green: 0.42, blue: 0.66)],
+                                  startPoint: .top,
+                                  endPoint: .bottom)
+        case .violet:
+            return LinearGradient(colors: [Color(red: 0.79, green: 0.66, blue: 0.97),
+                                           Color(red: 0.47, green: 0.36, blue: 0.78)],
+                                  startPoint: .top,
+                                  endPoint: .bottom)
+        }
     }
+
 }
 
 private struct StemShape: Shape {
@@ -272,25 +486,52 @@ private struct LeafShape: Shape {
 
     func path(in rect: CGRect) -> Path {
         Path { path in
-            path.move(to: CGPoint(x: rect.minX, y: rect.midY))
-            path.addQuadCurve(to: CGPoint(x: rect.midX, y: rect.minY), control: CGPoint(x: rect.midX * (1 + curve * 0.4), y: rect.midY * 0.4))
-            path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.midY), control: CGPoint(x: rect.midX * (1 + curve * 0.4), y: rect.midY * 1.6))
-            path.addQuadCurve(to: CGPoint(x: rect.midX, y: rect.maxY), control: CGPoint(x: rect.midX * (1 - curve * 0.4), y: rect.midY * 1.6))
-            path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.midY), control: CGPoint(x: rect.midX * (1 - curve * 0.4), y: rect.midY * 0.4))
+            let width = rect.width
+            let height = rect.height
+            let midY = rect.midY
+            let lean = curve * width * 0.25
+
+            path.move(to: CGPoint(x: rect.minX, y: midY))
+            path.addQuadCurve(to: CGPoint(x: rect.minX + width * 0.2, y: rect.minY + height * 0.18),
+                              control: CGPoint(x: rect.minX - width * 0.05, y: midY - height * 0.22))
+            path.addQuadCurve(to: CGPoint(x: rect.midX + lean, y: rect.minY + height * 0.05),
+                              control: CGPoint(x: rect.minX + width * 0.45 + lean * 0.4, y: rect.minY - height * 0.05))
+            path.addQuadCurve(to: CGPoint(x: rect.maxX, y: midY),
+                              control: CGPoint(x: rect.midX + lean + width * 0.26, y: rect.minY + height * 0.12))
+            path.addQuadCurve(to: CGPoint(x: rect.midX + lean, y: rect.maxY - height * 0.05),
+                              control: CGPoint(x: rect.midX + lean + width * 0.26, y: rect.maxY - height * 0.12))
+            path.addQuadCurve(to: CGPoint(x: rect.minX + width * 0.2, y: rect.maxY - height * 0.18),
+                              control: CGPoint(x: rect.minX + width * 0.45 + lean * 0.4, y: rect.maxY + height * 0.05))
+            path.addQuadCurve(to: CGPoint(x: rect.minX, y: midY),
+                              control: CGPoint(x: rect.minX - width * 0.05, y: midY + height * 0.22))
             path.closeSubpath()
         }
     }
 }
 
-private struct PetalShape: Shape {
+private struct TulipShape: Shape {
     func path(in rect: CGRect) -> Path {
         let width = rect.width
+        let height = rect.height
+        let midX = rect.midX
         return Path { path in
-            path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-            path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.midY), control: CGPoint(x: rect.midX + width * 0.45, y: rect.midY * 0.4))
-            path.addQuadCurve(to: CGPoint(x: rect.midX, y: rect.maxY), control: CGPoint(x: rect.midX + width * 0.45, y: rect.midY * 1.6))
-            path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.midY), control: CGPoint(x: rect.midX - width * 0.45, y: rect.midY * 1.6))
-            path.addQuadCurve(to: CGPoint(x: rect.midX, y: rect.minY), control: CGPoint(x: rect.midX - width * 0.45, y: rect.midY * 0.4))
+            path.move(to: CGPoint(x: midX, y: rect.maxY))
+            path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.midY),
+                              control: CGPoint(x: rect.minX + width * 0.08, y: rect.maxY - height * 0.08))
+            path.addQuadCurve(to: CGPoint(x: rect.minX + width * 0.18, y: rect.minY + height * 0.32),
+                              control: CGPoint(x: rect.minX - width * 0.18, y: rect.minY + height * 0.4))
+            path.addQuadCurve(to: CGPoint(x: midX - width * 0.18, y: rect.minY + height * 0.08),
+                              control: CGPoint(x: rect.minX + width * 0.32, y: rect.minY + height * 0.12))
+            path.addQuadCurve(to: CGPoint(x: midX, y: rect.minY),
+                              control: CGPoint(x: midX - width * 0.04, y: rect.minY))
+            path.addQuadCurve(to: CGPoint(x: midX + width * 0.18, y: rect.minY + height * 0.08),
+                              control: CGPoint(x: midX + width * 0.04, y: rect.minY))
+            path.addQuadCurve(to: CGPoint(x: rect.maxX - width * 0.18, y: rect.minY + height * 0.32),
+                              control: CGPoint(x: rect.maxX - width * 0.32, y: rect.minY + height * 0.12))
+            path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.midY),
+                              control: CGPoint(x: rect.maxX + width * 0.18, y: rect.minY + height * 0.4))
+            path.addQuadCurve(to: CGPoint(x: midX, y: rect.maxY),
+                              control: CGPoint(x: rect.maxX - width * 0.08, y: rect.maxY - height * 0.08))
             path.closeSubpath()
         }
     }

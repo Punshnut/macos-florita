@@ -88,6 +88,49 @@ struct FloritaMiniView: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(LinearGradient(colors: [Color(red: 0.94, green: 0.97, blue: 0.95), Color(red: 0.88, green: 0.94, blue: 0.9)], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
+        case .softSunrise:
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(
+                    LinearGradient(colors: [Color(red: 1.0, green: 0.9, blue: 0.85),
+                                            Color(red: 0.99, green: 0.8, blue: 0.88)],
+                                   startPoint: .topLeading,
+                                   endPoint: .bottomTrailing)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.white.opacity(0.35), lineWidth: 1.1)
+                        .blendMode(.screen)
+                )
+                .shadow(color: Color(red: 0.94, green: 0.48, blue: 0.6).opacity(0.25), radius: 18, x: 0, y: 10)
+        case .eveningTwilight:
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(
+                    LinearGradient(colors: [Color(red: 0.33, green: 0.28, blue: 0.5),
+                                            Color(red: 0.12, green: 0.2, blue: 0.38)],
+                                   startPoint: .top,
+                                   endPoint: .bottomTrailing)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(LinearGradient(colors: [Color.purple.opacity(0.4), Color.blue.opacity(0.2)],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing),
+                                lineWidth: 1.2)
+                )
+                .shadow(color: Color.black.opacity(0.35), radius: 16, x: 0, y: 10)
+        case .forestCanopy:
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(
+                    LinearGradient(colors: [Color(red: 0.8, green: 0.92, blue: 0.82),
+                                            Color(red: 0.58, green: 0.79, blue: 0.68)],
+                                   startPoint: .topLeading,
+                                   endPoint: .bottomTrailing)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.white.opacity(0.28), lineWidth: 1.1)
+                )
+                .shadow(color: Color(red: 0.31, green: 0.57, blue: 0.44).opacity(0.22), radius: 14, x: 0, y: 8)
         case .plain:
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(Color(red: 0.95, green: 0.96, blue: 0.96))

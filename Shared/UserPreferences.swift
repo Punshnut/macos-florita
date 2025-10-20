@@ -23,6 +23,9 @@ enum WindowSizePreference: String, CaseIterable, Identifiable {
 
 enum BackgroundStylePreference: String, CaseIterable, Identifiable {
     case cozyGradient
+    case softSunrise
+    case eveningTwilight
+    case forestCanopy
     case plain
     case transparent
 
@@ -31,6 +34,9 @@ enum BackgroundStylePreference: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .cozyGradient: return "Pastel Canvas"
+        case .softSunrise: return "Soft Sunrise"
+        case .eveningTwilight: return "Evening Twilight"
+        case .forestCanopy: return "Forest Canopy"
         case .plain: return "Plain"
         case .transparent: return "Transparent"
         }

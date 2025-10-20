@@ -149,6 +149,11 @@ final class PlantStore: ObservableObject {
         return true
     }
 
+    func resetGrowthProgress() {
+        lastWateredDate = nil
+        daysOfCare = 0
+    }
+
     func advanceGrowthForDebug(by steps: Int = 1) {
         guard steps > 0 else { return }
         daysOfCare += steps

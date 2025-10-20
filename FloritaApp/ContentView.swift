@@ -127,6 +127,58 @@ struct ContentView: View {
                         AngularGradient(colors: [Color.white.opacity(0.12), Color.clear], center: .center)
                             .blur(radius: 220)
                     )
+            case .softSunrise:
+                LinearGradient(colors: [Color(red: 1.0, green: 0.92, blue: 0.85),
+                                        Color(red: 0.99, green: 0.79, blue: 0.88)],
+                               startPoint: .topLeading,
+                               endPoint: .bottomTrailing)
+                    .overlay(
+                        RadialGradient(colors: [Color.white.opacity(0.38), Color.clear],
+                                       center: .topLeading,
+                                       startRadius: 40,
+                                       endRadius: 320)
+                    )
+                    .overlay(
+                        LinearGradient(colors: [Color.white.opacity(0.12), Color.clear],
+                                       startPoint: .bottomTrailing,
+                                       endPoint: .topLeading)
+                            .blur(radius: 200)
+                    )
+            case .eveningTwilight:
+                LinearGradient(colors: [Color(red: 0.39, green: 0.32, blue: 0.58),
+                                        Color(red: 0.15, green: 0.22, blue: 0.41)],
+                               startPoint: .top,
+                               endPoint: .bottomTrailing)
+                    .overlay(
+                        AngularGradient(colors: [Color.purple.opacity(0.25),
+                                                 Color.blue.opacity(0.12),
+                                                 Color.clear],
+                                        center: .center)
+                            .blur(radius: 240)
+                    )
+                    .overlay(
+                        RadialGradient(colors: [Color.white.opacity(0.18), Color.clear],
+                                       center: .top,
+                                       startRadius: 20,
+                                       endRadius: 260)
+                    )
+            case .forestCanopy:
+                LinearGradient(colors: [Color(red: 0.78, green: 0.91, blue: 0.8),
+                                        Color(red: 0.56, green: 0.78, blue: 0.68)],
+                               startPoint: .topLeading,
+                               endPoint: .bottomTrailing)
+                    .overlay(
+                        LinearGradient(colors: [Color.white.opacity(0.16), Color.clear],
+                                       startPoint: .topLeading,
+                                       endPoint: .bottomTrailing)
+                            .blur(radius: 160)
+                    )
+                    .overlay(
+                        RadialGradient(colors: [Color.white.opacity(0.18), Color.clear],
+                                       center: .bottom,
+                                       startRadius: 10,
+                                       endRadius: 260)
+                    )
             case .plain:
                 Color(red: 0.94, green: 0.97, blue: 0.99)
             case .transparent:

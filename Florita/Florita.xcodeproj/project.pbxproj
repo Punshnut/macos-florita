@@ -472,14 +472,14 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			ASSETCATALOG_COMPILER_APPICON_NAME = "";
-			CODE_SIGN_ENTITLEMENTS = Florita/Florita.entitlements;
+			CODE_SIGN_ENTITLEMENTS = Florita/Florita/Florita.entitlements;
 			CODE_SIGN_STYLE = Automatic;
 			COMBINE_HIDPI_IMAGES = YES;
 			CURRENT_PROJECT_VERSION = 1;
 			DEVELOPMENT_TEAM = "";
 			ENABLE_PREVIEWS = YES;
 			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = Florita/Info.plist;
+			INFOPLIST_FILE = Florita/Florita/Info.plist;
 			LD_RUNPATH_SEARCH_PATHS = (
 				"$(inherited)",
 				"@executable_path/../Frameworks"
@@ -498,14 +498,14 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			ASSETCATALOG_COMPILER_APPICON_NAME = "";
-			CODE_SIGN_ENTITLEMENTS = Florita/Florita.entitlements;
+			CODE_SIGN_ENTITLEMENTS = Florita/Florita/Florita.entitlements;
 			CODE_SIGN_STYLE = Automatic;
 			COMBINE_HIDPI_IMAGES = YES;
 			CURRENT_PROJECT_VERSION = 1;
 			DEVELOPMENT_TEAM = "";
 			ENABLE_PREVIEWS = YES;
 			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = Florita/Info.plist;
+			INFOPLIST_FILE = Florita/Florita/Info.plist;
 			LD_RUNPATH_SEARCH_PATHS = (
 				"$(inherited)",
 				"@executable_path/../Frameworks"
@@ -524,12 +524,12 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			APPLICATION_EXTENSION_API_ONLY = YES;
-			CODE_SIGN_ENTITLEMENTS = FloritaWidget/FloritaWidget.entitlements;
+			CODE_SIGN_ENTITLEMENTS = Florita/FloritaWidget/FloritaWidget.entitlements;
 			CODE_SIGN_STYLE = Automatic;
 			CURRENT_PROJECT_VERSION = 1;
 			DEVELOPMENT_TEAM = "";
 			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = FloritaWidget/Info.plist;
+			INFOPLIST_FILE = Florita/FloritaWidget/Info.plist;
 			LD_RUNPATH_SEARCH_PATHS = (
 				"$(inherited)",
 				"@executable_path/../Frameworks",
@@ -550,12 +550,12 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			APPLICATION_EXTENSION_API_ONLY = YES;
-			CODE_SIGN_ENTITLEMENTS = FloritaWidget/FloritaWidget.entitlements;
+			CODE_SIGN_ENTITLEMENTS = Florita/FloritaWidget/FloritaWidget.entitlements;
 			CODE_SIGN_STYLE = Automatic;
 			CURRENT_PROJECT_VERSION = 1;
 			DEVELOPMENT_TEAM = "";
 			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = FloritaWidget/Info.plist;
+			INFOPLIST_FILE = Florita/FloritaWidget/Info.plist;
 			LD_RUNPATH_SEARCH_PATHS = (
 				"$(inherited)",
 				"@executable_path/../Frameworks",

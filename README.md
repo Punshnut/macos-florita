@@ -13,7 +13,7 @@ Hola y welcome to Florita, a playful macOS 14+ SwiftUI experiment that keeps a l
 - Unit tests cover growth thresholds and calendar-day comparisons so the plant behaves consistently.
 
 ## Getting Started
-1. Open `FloritaProject/Florita.xcodeproj` in Xcode 15 or newer (macOS 14 SDK).
+1. Open `Florita.xcodeproj` in Xcode 15 or newer (macOS 14 SDK).
 2. Select the **Florita** scheme and run on “My Mac (macOS 14+)”.
 3. Follow or skip the short intro - Florita won’t mind.
 4. Use the Window menu or in-app button to open **Florita Mini** and park the plant where you like.

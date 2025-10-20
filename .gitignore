@@ -6,7 +6,5 @@ DerivedData/
 *.xcworkspace
 *.xcuserdata
 *.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
-# Node/Electron (falls du es doch nutzt)
-node_modules/
 # Secrets
 .env

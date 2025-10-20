@@ -241,7 +241,6 @@ private struct LeafShape: Shape {
 private struct PetalShape: Shape {
     func path(in rect: CGRect) -> Path {
         let width = rect.width
-        let height = rect.height
         return Path { path in
             path.move(to: CGPoint(x: rect.midX, y: rect.minY))
             path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.midY), control: CGPoint(x: rect.midX + width * 0.45, y: rect.midY * 0.4))
@@ -278,7 +277,7 @@ private extension PlantStage {
 
 private extension CGFloat {
     func clamped(to range: ClosedRange<CGFloat> = 0...1) -> CGFloat {
-        min(max(self, range.lowerBound), range.upperBound)
+        Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
     }
 }
 

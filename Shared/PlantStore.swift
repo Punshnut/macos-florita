@@ -1,9 +1,9 @@
 import SwiftUI
 import Combine
 
-@MainActor
 final class PlantStore: ObservableObject {
-    static let shared = PlantStore()
+    @MainActor static let shared = PlantStore()
+    static let sharedDefaults = UserDefaults(suiteName: appGroupIdentifier) ?? .standard
     static let appGroupIdentifier = "group.com.example.florita"
 
     enum StorageKey {
@@ -16,10 +16,6 @@ final class PlantStore: ObservableObject {
         static let backgroundStylePreference = "backgroundStylePreference"
     }
 
-    static var sharedDefaults: UserDefaults {
-        UserDefaults(suiteName: appGroupIdentifier) ?? .standard
-    }
-
     private let defaults: UserDefaults
     private var lastWateredTimestampStorage: AppStorage<Double>
     private var daysOfCareStorage: AppStorage<Int>
@@ -30,6 +26,7 @@ final class PlantStore: ObservableObject {
     private var backgroundStyleStorage: AppStorage<String>
     private let calendar: Calendar
 
+    @MainActor
     init(defaults: UserDefaults = PlantStore.sharedDefaults, calendar: Calendar = Calendar(identifier: .gregorian)) {
         self.defaults = defaults
         self.calendar = calendar

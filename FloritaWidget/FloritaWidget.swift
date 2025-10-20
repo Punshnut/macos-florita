@@ -141,9 +141,9 @@ struct WaterPlantIntent: AppIntent {
             await MainActor.run {
                 NotificationService.shared.scheduleCareReminder(at: nextNine)
             }
-            return .result(dialog: IntentDialog(Localization.string("wateredToday")))
+            return .result(dialog: IntentDialog(LocalizedStringResource("wateredToday")))
         } else {
-            return .result(dialog: IntentDialog(Localization.string("wateredToday")))
+            return .result(dialog: IntentDialog(LocalizedStringResource("wateredToday")))
         }
     }
 }

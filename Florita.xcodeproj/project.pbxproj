@@ -19,6 +19,7 @@
 	1A0D0C0611223344556677D1 /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677D3 /* OnboardingFlowView.swift */; };
 	1A0D0C0611223344556677D2 /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677D4 /* UserPreferences.swift */; };
 	1A0D0C0611223344556677D6 /* FloritaMiniView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677D7 /* FloritaMiniView.swift */; };
+	1A0D0C0611223344556677D8 /* FloritaMenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677D9 /* FloritaMenuBarView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 	1A0D0C0611223344556677D3 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
 	1A0D0C0611223344556677D4 /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
 	1A0D0C0611223344556677D7 /* FloritaMiniView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloritaMiniView.swift; sourceTree = "<group>"; };
+	1A0D0C0611223344556677D9 /* FloritaMenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloritaMenuBarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +89,7 @@
 			1A0D0C0611223344556677D3 /* OnboardingFlowView.swift */,
 			1A0D0C0611223344556677CF /* FloritaSettingsView.swift */,
 			1A0D0C0611223344556677D7 /* FloritaMiniView.swift */,
+			1A0D0C0611223344556677D9 /* FloritaMenuBarView.swift */,
 			1A0D0C06112233445566778A /* Info.plist */
 		);
 		path = FloritaApp;
@@ -239,7 +242,8 @@
 			1A0D0C0611223344556677D0 /* FloritaSettingsView.swift in Sources */,
 			1A0D0C0611223344556677D1 /* OnboardingFlowView.swift in Sources */,
 			1A0D0C0611223344556677D2 /* UserPreferences.swift in Sources */,
-			1A0D0C0611223344556677D6 /* FloritaMiniView.swift in Sources */
+			1A0D0C0611223344556677D6 /* FloritaMiniView.swift in Sources */,
+			1A0D0C0611223344556677D8 /* FloritaMenuBarView.swift in Sources */
 		);
 		runOnlyForDeploymentPostprocessing = 0;
 	};

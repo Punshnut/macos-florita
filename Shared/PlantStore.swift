@@ -13,6 +13,7 @@ final class PlantStore: ObservableObject {
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
         static let windowSizePreference = "windowSizePreference"
         static let backgroundStylePreference = "backgroundStylePreference"
+        static let menuBarEnabled = "menuBarEnabled"
     }
 
     private let defaults: UserDefaults
@@ -23,6 +24,7 @@ final class PlantStore: ObservableObject {
     private var onboardingStorage: AppStorage<Bool>
     private var windowSizeStorage: AppStorage<String>
     private var backgroundStyleStorage: AppStorage<String>
+    private var menuBarStorage: AppStorage<Bool>
     private let calendar: Calendar
 
     @MainActor
@@ -36,6 +38,7 @@ final class PlantStore: ObservableObject {
         onboardingStorage = AppStorage(wrappedValue: false, StorageKey.hasCompletedOnboarding, store: defaults)
         windowSizeStorage = AppStorage(wrappedValue: WindowSizePreference.large.rawValue, StorageKey.windowSizePreference, store: defaults)
         backgroundStyleStorage = AppStorage(wrappedValue: BackgroundStylePreference.cozyGradient.rawValue, StorageKey.backgroundStylePreference, store: defaults)
+        menuBarStorage = AppStorage(wrappedValue: false, StorageKey.menuBarEnabled, store: defaults)
         recomputeStage()
     }
 
@@ -110,6 +113,15 @@ final class PlantStore: ObservableObject {
         }
     }
 
+    var menuBarIconEnabled: Bool {
+        get { menuBarStorage.wrappedValue }
+        set {
+            guard newValue != menuBarStorage.wrappedValue else { return }
+            objectWillChange.send()
+            menuBarStorage.wrappedValue = newValue
+        }
+    }
+
     var hasWateredToday: Bool {
         guard let lastWateredDate else { return false }
         return PlantStore.isSameCalendarDay(lastWateredDate, Date(), calendar: calendar)
@@ -141,6 +153,7 @@ final class PlantStore: ObservableObject {
         hasCompletedOnboarding = false
         windowSize = .large
         backgroundStyle = .cozyGradient
+        menuBarIconEnabled = false
     }
 
     func markOnboardingComplete() {

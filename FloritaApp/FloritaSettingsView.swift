@@ -18,6 +18,11 @@ struct FloritaSettingsView: View {
                 }
             }
 
+            Section("Menu Bar") {
+                Toggle("Show Florita in menu bar", isOn: menuBarBinding)
+                    .toggleStyle(.switch)
+            }
+
             Section("Animation") {
                 Toggle("Gently animate Florita's growth", isOn: animationBinding)
                     .toggleStyle(.switch)
@@ -50,6 +55,13 @@ struct FloritaSettingsView: View {
         Binding(
             get: { store.backgroundStyle },
             set: { store.backgroundStyle = $0 }
+        )
+    }
+
+    private var menuBarBinding: Binding<Bool> {
+        Binding(
+            get: { store.menuBarIconEnabled },
+            set: { store.menuBarIconEnabled = $0 }
         )
     }
 }

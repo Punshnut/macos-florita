@@ -17,5 +17,12 @@ struct FloritaApp: App {
         Settings {
             FloritaSettingsView(store: store)
         }
+        if store.menuBarIconEnabled {
+            MenuBarExtra("Florita", systemImage: "leaf.fill") {
+                FloritaMenuBarView(store: store)
+                    .frame(width: 240)
+            }
+            .menuBarExtraStyle(.window)
+        }
     }
 }

@@ -6,23 +6,30 @@ import SwiftUI
 struct StaticGrowthCanvas: View {
     /// Stage that determines which layers should be rendered.
     var growthStage: FloritaGrowthStage
+    /// Phase emitted by tap interactions to drive temporary shake.
+    var tapShakePhase: CGFloat
 
     var body: some View {
         GeometryReader { geometry in
             let canvasSize = geometry.size
             let layerFactory = GrowthSceneLayers(growthStage: growthStage)
+            let tapSway = tapShakeSway(phase: tapShakePhase, time: nil)
             ZStack {
                 layerFactory.makeBackgroundBaseLayer()
                 layerFactory.makeLightRayLayer(size: canvasSize, time: nil)
                 layerFactory.makeSkyLayer(size: canvasSize, time: nil)
                 layerFactory.makeSoilShadowLayer(size: canvasSize)
                 layerFactory.makeSoilLayer(size: canvasSize)
-                layerFactory.makeStemLayer(size: canvasSize, sway: 0, growth: 1)
+                layerFactory.makeStemLayer(size: canvasSize, sway: tapSway, growth: 1)
                 if growthStage != .sprout {
-                    layerFactory.makeLeafLayer(size: canvasSize, growth: 1, sway: 0)
+                    layerFactory.makeLeafLayer(size: canvasSize, growth: 1, sway: tapSway)
                 }
                 if growthStage == .blooms {
-                    layerFactory.makeBloomLayer(size: canvasSize, growth: 1, sway: 0, time: nil)
+                    layerFactory.makeBloomLayer(size: canvasSize,
+                                                growth: 1,
+                                                sway: tapSway,
+                                                time: nil,
+                                                tapShakePhase: tapShakePhase)
                 }
                 layerFactory.makeForegroundPebbleLayer(size: canvasSize)
             }
@@ -36,6 +43,8 @@ struct StaticGrowthCanvas: View {
 struct AnimatedGrowthCanvas: View {
     /// Stage that drives the number of layers and animation limits.
     var growthStage: FloritaGrowthStage
+    /// Phase emitted by tap interactions to drive temporary shake.
+    var tapShakePhase: CGFloat
     /// Reference date used to compute progress within the looped animation.
     @State private var animationStartDate = Date()
 
@@ -43,7 +52,8 @@ struct AnimatedGrowthCanvas: View {
         TimelineView(.animation) { timeline in
             AnimatedGrowthScene(date: timeline.date,
                                 growthStage: growthStage,
-                                animationStartDate: animationStartDate)
+                                animationStartDate: animationStartDate,
+                                tapShakePhase: tapShakePhase)
         }
         .aspectRatio(1, contentMode: .fit)
         .accessibilityLabel(growthStage.localizedStageDescription)
@@ -57,6 +67,7 @@ private struct AnimatedGrowthScene: View {
     let date: Date
     let growthStage: FloritaGrowthStage
     let animationStartDate: Date
+    let tapShakePhase: CGFloat
 
     private var elapsed: TimeInterval { max(date.timeIntervalSince(animationStartDate), 0) }
     private var progress: CGFloat {
@@ -72,7 +83,9 @@ private struct AnimatedGrowthScene: View {
             let stemGrowth = ease((stageProgress / 0.4).clamped())
             let leavesGrowth = growthStage != .sprout ? ease(((stageProgress - 0.4) / 0.3).clamped()) : 0
             let bloomGrowth = growthStage == .blooms ? ease(((stageProgress - 0.75) / 0.25).clamped()) : 0
-            let sway: Double = stageProgress >= growthStage.animationCap ? sin(elapsed / 3.0) * 2.2 : 0
+            let baseSway: Double = stageProgress >= growthStage.animationCap ? sin(elapsed / 3.0) * 2.2 : 0
+            let tapSway = tapShakeSway(phase: tapShakePhase, time: elapsed)
+            let combinedSway = baseSway + tapSway
 
             ZStack {
                 layerFactory.makeBackgroundBaseLayer()
@@ -80,12 +93,16 @@ private struct AnimatedGrowthScene: View {
                 layerFactory.makeSkyLayer(size: canvasSize, time: elapsed)
                 layerFactory.makeSoilShadowLayer(size: canvasSize)
                 layerFactory.makeSoilLayer(size: canvasSize)
-                layerFactory.makeStemLayer(size: canvasSize, sway: sway, growth: stemGrowth)
+                layerFactory.makeStemLayer(size: canvasSize, sway: combinedSway, growth: stemGrowth)
                 if leavesGrowth > 0 {
-                    layerFactory.makeLeafLayer(size: canvasSize, growth: leavesGrowth, sway: sway)
+                    layerFactory.makeLeafLayer(size: canvasSize, growth: leavesGrowth, sway: combinedSway)
                 }
                 if bloomGrowth > 0 {
-                    layerFactory.makeBloomLayer(size: canvasSize, growth: bloomGrowth, sway: sway, time: elapsed)
+                    layerFactory.makeBloomLayer(size: canvasSize,
+                                                growth: bloomGrowth,
+                                                sway: combinedSway,
+                                                time: elapsed,
+                                                tapShakePhase: tapShakePhase)
                 }
                 layerFactory.makeForegroundPebbleLayer(size: canvasSize)
             }
@@ -177,78 +194,141 @@ private struct GrowthSceneLayers {
     func makeStemLayer(size: CGSize, sway: Double, growth: CGFloat) -> some View {
         StemShape()
             .trim(from: 0, to: growth)
-            .stroke(style: StrokeStyle(lineWidth: size.width * 0.035, lineCap: .round))
+            .stroke(style: StrokeStyle(lineWidth: size.width * 0.04, lineCap: .round))
             .foregroundStyle(LinearGradient(colors: [Color(red: 0.38, green: 0.63, blue: 0.35), Color(red: 0.29, green: 0.51, blue: 0.28)], startPoint: .bottom, endPoint: .top))
-            .frame(width: size.width * 0.2, height: size.height * 0.55)
-            .position(x: size.width / 2, y: size.height * 0.52)
-            .rotationEffect(.degrees(sway * 0.18))
+            .frame(width: size.width * 0.24, height: size.height * 0.58)
+            .position(x: size.width / 2, y: size.height * 0.51)
+            .rotationEffect(.degrees(sway * 0.2))
     }
 
     /// Composite leaf layer comprised of multiple reusable leaf shapes.
     func makeLeafLayer(size: CGSize, growth: CGFloat, sway: Double) -> some View {
         let specs: [LeafSpec] = [
-            LeafSpec(position: CGPoint(x: 0.34, y: 0.64),
+            LeafSpec(position: CGPoint(x: 0.28, y: 0.7),
+                     size: CGSize(width: 0.34, height: 0.22),
+                     anchor: .trailing,
+                     baseRotation: -46,
+                     swayMultiplier: 0.8,
+                     curve: 1.3,
+                     start: 0.0,
+                     span: 0.26,
+                     tone: .forest),
+            LeafSpec(position: CGPoint(x: 0.24, y: 0.6),
                      size: CGSize(width: 0.28, height: 0.19),
                      anchor: .trailing,
-                     baseRotation: -34,
-                     swayMultiplier: 0.55,
-                     curve: 1.05,
-                     start: 0.0,
+                     baseRotation: -58,
+                     swayMultiplier: 0.92,
+                     curve: 1.45,
+                     start: 0.05,
+                     span: 0.28,
+                     tone: .emerald),
+            LeafSpec(position: CGPoint(x: 0.34, y: 0.55),
+                     size: CGSize(width: 0.32, height: 0.21),
+                     anchor: .trailing,
+                     baseRotation: -32,
+                     swayMultiplier: 0.68,
+                     curve: 1.1,
+                     start: 0.1,
+                     span: 0.3,
+                     tone: .jade),
+            LeafSpec(position: CGPoint(x: 0.36, y: 0.47),
+                     size: CGSize(width: 0.29, height: 0.2),
+                     anchor: .trailing,
+                     baseRotation: -18,
+                     swayMultiplier: 0.52,
+                     curve: 0.85,
+                     start: 0.2,
                      span: 0.3,
                      tone: .emerald),
-            LeafSpec(position: CGPoint(x: 0.66, y: 0.63),
-                     size: CGSize(width: 0.28, height: 0.19),
-                     anchor: .leading,
-                     baseRotation: 34,
-                     swayMultiplier: -0.55,
-                     curve: -1.05,
-                     start: 0.0,
-                     span: 0.3,
-                     tone: .jade),
-            LeafSpec(position: CGPoint(x: 0.42, y: 0.5),
-                     size: CGSize(width: 0.32, height: 0.21),
-                     anchor: .trailing,
-                     baseRotation: -20,
-                     swayMultiplier: 0.4,
-                     curve: 0.85,
-                     start: 0.22,
-                     span: 0.32,
-                     tone: .jade),
-            LeafSpec(position: CGPoint(x: 0.58, y: 0.48),
-                     size: CGSize(width: 0.32, height: 0.21),
-                     anchor: .leading,
-                     baseRotation: 22,
-                     swayMultiplier: -0.4,
-                     curve: -0.85,
-                     start: 0.22,
-                     span: 0.32,
-                     tone: .forest),
-            LeafSpec(position: CGPoint(x: 0.4, y: 0.4),
-                     size: CGSize(width: 0.26, height: 0.18),
+            LeafSpec(position: CGPoint(x: 0.43, y: 0.4),
+                     size: CGSize(width: 0.25, height: 0.17),
                      anchor: .trailing,
                      baseRotation: -12,
-                     swayMultiplier: 0.3,
-                     curve: 0.6,
-                     start: 0.48,
+                     swayMultiplier: 0.38,
+                     curve: 0.7,
+                     start: 0.34,
+                     span: 0.28,
+                     tone: .mint),
+            LeafSpec(position: CGPoint(x: 0.39, y: 0.33),
+                     size: CGSize(width: 0.21, height: 0.15),
+                     anchor: .trailing,
+                     baseRotation: -8,
+                     swayMultiplier: 0.28,
+                     curve: 0.55,
+                     start: 0.46,
+                     span: 0.26,
+                     tone: .forest),
+            LeafSpec(position: CGPoint(x: 0.47, y: 0.28),
+                     size: CGSize(width: 0.19, height: 0.14),
+                     anchor: .bottom,
+                     baseRotation: -3,
+                     swayMultiplier: 0.18,
+                     curve: 0.2,
+                     start: 0.56,
+                     span: 0.24,
+                     tone: .mint),
+            LeafSpec(position: CGPoint(x: 0.72, y: 0.7),
+                     size: CGSize(width: 0.34, height: 0.22),
+                     anchor: .leading,
+                     baseRotation: 46,
+                     swayMultiplier: -0.8,
+                     curve: -1.3,
+                     start: 0.0,
+                     span: 0.26,
+                     tone: .jade),
+            LeafSpec(position: CGPoint(x: 0.76, y: 0.6),
+                     size: CGSize(width: 0.28, height: 0.19),
+                     anchor: .leading,
+                     baseRotation: 58,
+                     swayMultiplier: -0.92,
+                     curve: -1.45,
+                     start: 0.06,
+                     span: 0.28,
+                     tone: .emerald),
+            LeafSpec(position: CGPoint(x: 0.66, y: 0.55),
+                     size: CGSize(width: 0.32, height: 0.21),
+                     anchor: .leading,
+                     baseRotation: 32,
+                     swayMultiplier: -0.68,
+                     curve: -1.1,
+                     start: 0.12,
                      span: 0.3,
                      tone: .forest),
-            LeafSpec(position: CGPoint(x: 0.6, y: 0.38),
-                     size: CGSize(width: 0.26, height: 0.18),
+            LeafSpec(position: CGPoint(x: 0.64, y: 0.47),
+                     size: CGSize(width: 0.29, height: 0.2),
                      anchor: .leading,
-                     baseRotation: 14,
-                     swayMultiplier: -0.3,
-                     curve: -0.6,
-                     start: 0.48,
+                     baseRotation: 18,
+                     swayMultiplier: -0.52,
+                     curve: -0.85,
+                     start: 0.22,
                      span: 0.3,
                      tone: .emerald),
-            LeafSpec(position: CGPoint(x: 0.5, y: 0.35),
-                     size: CGSize(width: 0.23, height: 0.17),
-                     anchor: .bottom,
-                     baseRotation: 0,
-                     swayMultiplier: 0.18,
-                     curve: 0,
-                     start: 0.62,
+            LeafSpec(position: CGPoint(x: 0.57, y: 0.4),
+                     size: CGSize(width: 0.25, height: 0.17),
+                     anchor: .leading,
+                     baseRotation: 12,
+                     swayMultiplier: -0.38,
+                     curve: -0.7,
+                     start: 0.34,
                      span: 0.28,
+                     tone: .mint),
+            LeafSpec(position: CGPoint(x: 0.61, y: 0.33),
+                     size: CGSize(width: 0.21, height: 0.15),
+                     anchor: .leading,
+                     baseRotation: 8,
+                     swayMultiplier: -0.28,
+                     curve: -0.55,
+                     start: 0.46,
+                     span: 0.26,
+                     tone: .forest),
+            LeafSpec(position: CGPoint(x: 0.53, y: 0.28),
+                     size: CGSize(width: 0.19, height: 0.14),
+                     anchor: .bottom,
+                     baseRotation: 3,
+                     swayMultiplier: -0.18,
+                     curve: -0.2,
+                     start: 0.56,
+                     span: 0.24,
                      tone: .mint)
         ]
 
@@ -328,34 +408,65 @@ private struct GrowthSceneLayers {
     }
 
     /// Blooming flower layer that emerges at the final growth stage.
-    func makeBloomLayer(size: CGSize, growth: CGFloat, sway: Double, time: TimeInterval?) -> some View {
+    func makeBloomLayer(size: CGSize,
+                        growth: CGFloat,
+                        sway: Double,
+                        time: TimeInterval?,
+                        tapShakePhase: CGFloat) -> some View {
         let specs: [TulipSpec] = [
             TulipSpec(base: CGPoint(x: 0.5, y: 0.34),
-                      size: CGSize(width: 0.22, height: 0.28),
-                      stemHeight: 0.16,
-                      stemWidth: 0.02,
+                      size: CGSize(width: 0.24, height: 0.31),
+                      stemHeight: 0.19,
+                      stemWidth: 0.022,
                       start: 0.0,
-                      span: 0.35,
+                      span: 0.3,
                       tilt: 0,
-                      swayMultiplier: 0.25,
+                      swayMultiplier: 0.28,
                       palette: .sunrise),
-            TulipSpec(base: CGPoint(x: 0.4, y: 0.36),
-                      size: CGSize(width: 0.2, height: 0.25),
+            TulipSpec(base: CGPoint(x: 0.38, y: 0.36),
+                      size: CGSize(width: 0.21, height: 0.27),
+                      stemHeight: 0.2,
+                      stemWidth: 0.02,
+                      start: 0.12,
+                      span: 0.3,
+                      tilt: -12,
+                      swayMultiplier: 0.42,
+                      palette: .orchid),
+            TulipSpec(base: CGPoint(x: 0.62, y: 0.35),
+                      size: CGSize(width: 0.21, height: 0.27),
+                      stemHeight: 0.2,
+                      stemWidth: 0.02,
+                      start: 0.18,
+                      span: 0.32,
+                      tilt: 10,
+                      swayMultiplier: -0.4,
+                      palette: .violet),
+            TulipSpec(base: CGPoint(x: 0.3, y: 0.34),
+                      size: CGSize(width: 0.18, height: 0.24),
                       stemHeight: 0.18,
                       stemWidth: 0.018,
-                      start: 0.28,
-                      span: 0.34,
-                      tilt: -6,
-                      swayMultiplier: 0.35,
-                      palette: .orchid),
-            TulipSpec(base: CGPoint(x: 0.6, y: 0.35),
-                      size: CGSize(width: 0.2, height: 0.25),
-                      stemHeight: 0.17,
+                      start: 0.26,
+                      span: 0.3,
+                      tilt: -18,
+                      swayMultiplier: 0.5,
+                      palette: .sunrise),
+            TulipSpec(base: CGPoint(x: 0.7, y: 0.34),
+                      size: CGSize(width: 0.18, height: 0.24),
+                      stemHeight: 0.18,
                       stemWidth: 0.018,
-                      start: 0.56,
-                      span: 0.34,
-                      tilt: 7,
-                      swayMultiplier: -0.32,
+                      start: 0.34,
+                      span: 0.3,
+                      tilt: 16,
+                      swayMultiplier: -0.48,
+                      palette: .orchid),
+            TulipSpec(base: CGPoint(x: 0.5, y: 0.29),
+                      size: CGSize(width: 0.17, height: 0.23),
+                      stemHeight: 0.16,
+                      stemWidth: 0.017,
+                      start: 0.45,
+                      span: 0.28,
+                      tilt: 3,
+                      swayMultiplier: 0.24,
                       palette: .violet)
         ]
 
@@ -363,6 +474,8 @@ private struct GrowthSceneLayers {
                                                    Color(red: 0.29, green: 0.55, blue: 0.3)],
                                           startPoint: .bottom,
                                           endPoint: .top)
+        let tapNormalized = tapShakeNormalized(tapShakePhase)
+        let phaseProgress = 1 - tapNormalized
 
         return ZStack {
             ForEach(Array(specs.enumerated()), id: \.offset) { index, spec in
@@ -377,14 +490,21 @@ private struct GrowthSceneLayers {
                     let stemScale = 0.35 + 0.65 * bloomProgress
                     let bloomScale = 0.35 + 0.65 * bloomProgress
                     let swayContribution = sway * spec.swayMultiplier
-                    let bob = sin((time ?? 0) / 1.8 + Double(index) * 0.9) * Double(bloomProgress) * 1.8
+                    let baseBob = sin((time ?? 0) / 1.8 + Double(index) * 0.9) * Double(bloomProgress) * 1.8
+                    let shakeOscillation: Double
+                    if let time {
+                        shakeOscillation = sin(time * 18 + Double(index) * 1.1) * tapNormalized
+                    } else {
+                        shakeOscillation = sin(phaseProgress * .pi * 5 + Double(index) * 0.7) * tapNormalized
+                    }
+                    let bob = baseBob + shakeOscillation * Double(bloomProgress) * 2.4
                     let stemTopY = baseY - stemHeight * stemScale
 
                     Capsule(style: .continuous)
                         .fill(stemGradient)
                         .frame(width: stemWidth, height: stemHeight)
                         .scaleEffect(x: 1, y: stemScale, anchor: .bottom)
-                        .rotationEffect(.degrees(spec.tilt + swayContribution * 0.6), anchor: .bottom)
+                        .rotationEffect(.degrees(spec.tilt + swayContribution * 0.6 + shakeOscillation * 3.5), anchor: .bottom)
                         .position(x: centerX, y: baseY)
                         .opacity(Double(bloomProgress))
 
@@ -392,7 +512,8 @@ private struct GrowthSceneLayers {
                         .fill(tulipGradient(palette: spec.palette))
                         .frame(width: flowerWidth, height: flowerHeight)
                         .scaleEffect(bloomScale, anchor: .bottom)
-                        .rotationEffect(.degrees(spec.tilt + swayContribution * 1.1 + bob * 0.35), anchor: .bottom)
+                        .rotationEffect(.degrees(spec.tilt + swayContribution * 1.1 + bob * 0.35 + shakeOscillation * 4.6),
+                                        anchor: .bottom)
                         .position(x: centerX, y: stemTopY)
                         .opacity(Double(bloomProgress))
                         .overlay(
@@ -497,13 +618,37 @@ private struct GrowthSceneLayers {
 
 }
 
+/// Normalizes a shake phase value into a 0...1 envelope.
+private func tapShakeNormalized(_ phase: CGFloat) -> Double {
+    Double(min(max(phase, 0), 1))
+}
+
+/// Produces a sway angle in degrees derived from the tap shake phase and optional timeline.
+private func tapShakeSway(phase: CGFloat, time: TimeInterval?) -> Double {
+    let normalized = tapShakeNormalized(phase)
+    guard normalized > 0 else { return 0 }
+    let inverse = 1 - normalized
+    let envelope = sin(inverse * .pi * 4.5)
+    let timeComponent: Double
+    if let time {
+        timeComponent = sin(time * 16.0) * 0.6 + sin(time * 21.0) * 0.35
+    } else {
+        timeComponent = sin(inverse * .pi * 5.0)
+    }
+    let primarySwing = envelope * normalized * 7.2
+    let jitterSwing = timeComponent * normalized * 2.4
+    return primarySwing + jitterSwing
+}
+
 /// Procedural bezier describing Florita's stem.
 private struct StemShape: Shape {
     func path(in rect: CGRect) -> Path {
         Path { path in
             let midX = rect.midX
             path.move(to: CGPoint(x: midX, y: rect.maxY))
-            path.addCurve(to: CGPoint(x: midX, y: rect.minY), control1: CGPoint(x: midX - rect.width * 0.7, y: rect.midY), control2: CGPoint(x: midX + rect.width * 0.7, y: rect.midY))
+            path.addCurve(to: CGPoint(x: midX, y: rect.minY),
+                          control1: CGPoint(x: midX - rect.width * 1.05, y: rect.midY + rect.height * 0.12),
+                          control2: CGPoint(x: midX + rect.width * 1.05, y: rect.midY - rect.height * 0.16))
         }
     }
 }
@@ -596,10 +741,10 @@ private func ease(_ value: CGFloat) -> CGFloat {
 struct StaticGrowthCanvas_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            StaticGrowthCanvas(growthStage: .sprout)
-            StaticGrowthCanvas(growthStage: .leaves)
-            StaticGrowthCanvas(growthStage: .blooms)
-            AnimatedGrowthCanvas(growthStage: .blooms)
+            StaticGrowthCanvas(growthStage: .sprout, tapShakePhase: 0)
+            StaticGrowthCanvas(growthStage: .leaves, tapShakePhase: 0)
+            StaticGrowthCanvas(growthStage: .blooms, tapShakePhase: 0)
+            AnimatedGrowthCanvas(growthStage: .blooms, tapShakePhase: 0)
         }
         .padding()
         .previewLayout(.fixed(width: 240, height: 240))

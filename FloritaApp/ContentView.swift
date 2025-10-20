@@ -1,8 +1,7 @@
 import SwiftUI
-import WidgetKit
-
 struct ContentView: View {
     @ObservedObject var store: PlantStore
+    @Environment(\.openWindow) private var openWindow
     @State private var showOnboarding = false
 
     var body: some View {
@@ -42,6 +41,13 @@ struct ContentView: View {
             .buttonStyle(.plain)
             .padding(.horizontal, 36)
             .disabled(store.hasWateredToday)
+
+            Button(action: { openWindow(id: "mini") }) {
+                Label("Open Florita Mini", systemImage: "rectangle.portrait.on.rectangle.portrait")
+                    .labelStyle(.titleAndIcon)
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(.secondary)
 
             Spacer(minLength: 12)
         }
@@ -93,9 +99,6 @@ struct ContentView: View {
     private func waterPlant() {
         let didWater = store.waterToday()
         guard didWater else { return }
-
-        WidgetCenter.shared.reloadTimelines(ofKind: FloritaWidgetConstants.kind)
-
         let now = Date()
         let nextNine = Calendar.current.nextDate(after: now, matching: DateComponents(hour: 9, minute: 0), matchingPolicy: .nextTimePreservingSmallerComponents) ?? now.addingTimeInterval(24 * 60 * 60)
         NotificationService.shared.scheduleCareReminder(at: nextNine)

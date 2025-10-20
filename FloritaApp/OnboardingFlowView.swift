@@ -7,8 +7,8 @@ struct OnboardingFlowView: View {
 
     private let steps: [OnboardingStep] = [
         OnboardingStep(title: "Welcome to Florita", subtitle: "Nurture a calm little garden on your desktop. Water once a day to help Florita glow."),
-        OnboardingStep(title: "Watering", subtitle: "Press \"Water\" in the app or tap the widget button once per calendar day. Florita keeps growing - no penalties, ever."),
-        OnboardingStep(title: "Add the Widget", subtitle: "Build the widget target once, then add Florita from the macOS widget gallery. Customize window size, background, and animation later in Settings.")
+        OnboardingStep(title: "Watering", subtitle: "Press \"Water\" in the app (or the mini window) once per calendar day. Florita keeps growing - no penalties, ever."),
+        OnboardingStep(title: "Florita Mini", subtitle: "Open the \"Florita Mini\" window for a widget-sized companion. Customize its look later in Settings.")
     ]
 
     var body: some View {

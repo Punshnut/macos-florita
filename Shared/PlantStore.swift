@@ -3,8 +3,7 @@ import Combine
 
 final class PlantStore: ObservableObject {
     @MainActor static let shared = PlantStore()
-    static let sharedDefaults = UserDefaults(suiteName: appGroupIdentifier) ?? .standard
-    static let appGroupIdentifier = "group.com.example.florita"
+    static let sharedDefaults = UserDefaults.standard
 
     enum StorageKey {
         static let lastWateredTimestamp = "lastWateredTimestamp"
@@ -146,33 +145,5 @@ final class PlantStore: ObservableObject {
 
     func markOnboardingComplete() {
         hasCompletedOnboarding = true
-    }
-}
-
-struct PlantSnapshot {
-    let lastWateredDate: Date?
-    let daysOfCare: Int
-    let stage: PlantStage
-    let prefersAnimatedGraphics: Bool
-    let windowSize: WindowSizePreference
-    let backgroundStyle: BackgroundStylePreference
-
-    var wateredToday: Bool {
-        guard let lastWateredDate else { return false }
-        return PlantStore.isSameCalendarDay(lastWateredDate, Date())
-    }
-
-    static func current(defaults: UserDefaults = PlantStore.sharedDefaults) -> PlantSnapshot {
-        let timestamp = defaults.double(forKey: PlantStore.StorageKey.lastWateredTimestamp)
-        let lastWatered = timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
-        let days = defaults.integer(forKey: PlantStore.StorageKey.daysOfCare)
-        let stageRaw = defaults.string(forKey: PlantStore.StorageKey.stage) ?? PlantStage.sprout.rawValue
-        let stage = PlantStage(rawValue: stageRaw) ?? PlantStage.stage(forDaysOfCare: days)
-        let prefersAnimation = defaults.object(forKey: PlantStore.StorageKey.prefersAnimatedGraphics) as? Bool ?? true
-        let windowRaw = defaults.string(forKey: PlantStore.StorageKey.windowSizePreference) ?? WindowSizePreference.large.rawValue
-        let backgroundRaw = defaults.string(forKey: PlantStore.StorageKey.backgroundStylePreference) ?? BackgroundStylePreference.cozyGradient.rawValue
-        let window = WindowSizePreference(rawValue: windowRaw) ?? .large
-        let background = BackgroundStylePreference(rawValue: backgroundRaw) ?? .cozyGradient
-        return PlantSnapshot(lastWateredDate: lastWatered, daysOfCare: days, stage: stage, prefersAnimatedGraphics: prefersAnimation, windowSize: window, backgroundStyle: background)
     }
 }

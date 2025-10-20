@@ -98,8 +98,9 @@ struct AnimatedPlantCanvas: View {
     private func clampedProgress(for date: Date) -> CGFloat {
         guard date >= animationStart else { return 0 }
         let elapsed = date.timeIntervalSince(animationStart)
-        let duration: TimeInterval = 6
-        return CGFloat(min(max(elapsed / duration, 0), 1))
+        let duration: TimeInterval = 5.5
+        let normalized = CGFloat(elapsed / duration)
+        return normalized.clamped(to: 0...1)
     }
 }
 
@@ -127,28 +128,26 @@ private struct PlantAnimationScene: View {
     }
 
     private var stageProgress: CGFloat {
-        min(progress, stage.animationCap)
+        ease(progress.clamped(to: 0...stage.animationCap))
     }
 
     private var stemProgress: CGFloat {
-        min(stageProgress / 0.4, 1)
+        ease((stageProgress / 0.4).clamped())
     }
 
     private var leavesProgress: CGFloat {
         guard stage != .sprout else { return 0 }
-        let value = (stageProgress - 0.4) / 0.3
-        return min(max(value, 0), 1)
+        return ease(((stageProgress - 0.4) / 0.3).clamped())
     }
 
     private var bloomProgress: CGFloat {
         guard stage == .blooms else { return 0 }
-        let value = (stageProgress - 0.75) / 0.25
-        return min(max(value, 0), 1)
+        return ease(((stageProgress - 0.75) / 0.25).clamped())
     }
 
     private var idleSway: Double {
         guard stageProgress >= stage.animationCap else { return 0 }
-        return sin(time / 2.5) * 2.5
+        return sin(time / 3.0) * 1.8
     }
 
     private var backgroundLayer: some View {
@@ -275,6 +274,17 @@ private extension PlantStage {
             return 1.0
         }
     }
+}
+
+private extension CGFloat {
+    func clamped(to range: ClosedRange<CGFloat> = 0...1) -> CGFloat {
+        min(max(self, range.lowerBound), range.upperBound)
+    }
+}
+
+private func ease(_ value: CGFloat) -> CGFloat {
+    let x = value.clamped()
+    return x * x * (3 - 2 * x)
 }
 
 #if DEBUG

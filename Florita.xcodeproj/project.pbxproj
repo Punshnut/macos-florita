@@ -12,22 +12,13 @@
 	1A0D0C0611223344556677B2 /* PlantStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566778D /* PlantStore.swift */; };
 	1A0D0C0611223344556677B3 /* PlantStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566778E /* PlantStage.swift */; };
 	1A0D0C0611223344556677B4 /* PlantGraphics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566778F /* PlantGraphics.swift */; };
-	1A0D0C0611223344556677B5 /* FloritaWidgetConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566778C /* FloritaWidgetConstants.swift */; };
 	1A0D0C0611223344556677B6 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C061122334455667790 /* NotificationService.swift */; };
 	1A0D0C0611223344556677B7 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566779C /* Localizable.strings */; };
-	1A0D0C0611223344556677B8 /* FloritaWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C061122334455667792 /* FloritaWidget.swift */; };
-	1A0D0C0611223344556677B9 /* PlantStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566778D /* PlantStore.swift */; };
-	1A0D0C0611223344556677BA /* PlantStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566778E /* PlantStage.swift */; };
-	1A0D0C0611223344556677BB /* PlantGraphics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566778F /* PlantGraphics.swift */; };
-	1A0D0C0611223344556677BC /* FloritaWidgetConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566778C /* FloritaWidgetConstants.swift */; };
-	1A0D0C0611223344556677BD /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C061122334455667790 /* NotificationService.swift */; };
-	1A0D0C0611223344556677BE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1A0D0C06112233445566779C /* Localizable.strings */; };
-	1A0D0C0611223344556677BF /* FloritaWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1A0D0C061122334455667797 /* FloritaWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 	1A0D0C0611223344556677C0 /* PlantStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C061122334455667795 /* PlantStoreTests.swift */; };
 	1A0D0C0611223344556677D0 /* FloritaSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677CF /* FloritaSettingsView.swift */; };
 	1A0D0C0611223344556677D1 /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677D3 /* OnboardingFlowView.swift */; };
 	1A0D0C0611223344556677D2 /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677D4 /* UserPreferences.swift */; };
-	1A0D0C0611223344556677D5 /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677D4 /* UserPreferences.swift */; };
+	1A0D0C0611223344556677D6 /* FloritaMiniView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677D7 /* FloritaMiniView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,36 +31,16 @@
 	};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-	1A0D0C0611223344556677A3 /* Embed App Extensions */ = {
-		isa = PBXCopyFilesBuildPhase;
-		buildActionMask = 2147483647;
-		dstPath = "";
-		dstSubfolderSpec = 13;
-		files = (
-			1A0D0C0611223344556677BF /* FloritaWidget.appex in Embed App Extensions */,
-		);
-		name = "Embed App Extensions";
-		runOnlyForDeploymentPostprocessing = 0;
-	};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 	1A0D0C061122334455667788 /* FloritaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloritaApp.swift; sourceTree = "<group>"; };
 	1A0D0C061122334455667789 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 	1A0D0C06112233445566778A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-	1A0D0C06112233445566778B /* Florita.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Florita.entitlements; sourceTree = "<group>"; };
-	1A0D0C06112233445566778C /* FloritaWidgetConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloritaWidgetConstants.swift; sourceTree = "<group>"; };
 	1A0D0C06112233445566778D /* PlantStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantStore.swift; sourceTree = "<group>"; };
 	1A0D0C06112233445566778E /* PlantStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantStage.swift; sourceTree = "<group>"; };
 	1A0D0C06112233445566778F /* PlantGraphics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantGraphics.swift; sourceTree = "<group>"; };
 	1A0D0C061122334455667790 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
-	1A0D0C061122334455667792 /* FloritaWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloritaWidget.swift; sourceTree = "<group>"; };
-	1A0D0C061122334455667793 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-	1A0D0C061122334455667794 /* FloritaWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FloritaWidget.entitlements; sourceTree = "<group>"; };
 	1A0D0C061122334455667795 /* PlantStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantStoreTests.swift; sourceTree = "<group>"; };
 	1A0D0C061122334455667796 /* Florita.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Florita.app; sourceTree = BUILT_PRODUCTS_DIR; };
-	1A0D0C061122334455667797 /* FloritaWidget.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = FloritaWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 	1A0D0C061122334455667798 /* FloritaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FloritaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 	1A0D0C06112233445566779D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 	1A0D0C06112233445566779E /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -77,17 +48,11 @@
 	1A0D0C0611223344556677CF /* FloritaSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloritaSettingsView.swift; sourceTree = "<group>"; };
 	1A0D0C0611223344556677D3 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
 	1A0D0C0611223344556677D4 /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
+	1A0D0C0611223344556677D7 /* FloritaMiniView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloritaMiniView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 	1A0D0C0611223344556677A1 /* Frameworks */ = {
-		isa = PBXFrameworksBuildPhase;
-		buildActionMask = 2147483647;
-		files = (
-		);
-		runOnlyForDeploymentPostprocessing = 0;
-	};
-	1A0D0C0611223344556677A5 /* Frameworks */ = {
 		isa = PBXFrameworksBuildPhase;
 		buildActionMask = 2147483647;
 		files = (
@@ -107,9 +72,8 @@
 	1A0D0C061122334455667781 = {
 		isa = PBXGroup;
 		children = (
-			1A0D0C061122334455667782 /* Florita */, 
+	1A0D0C061122334455667782 /* Florita */, 
 			1A0D0C061122334455667783 /* Shared */,
-			1A0D0C061122334455667784 /* FloritaWidget */,
 			1A0D0C061122334455667785 /* FloritaTests */,
 			1A0D0C061122334455667786 /* Products */
 		);
@@ -122,8 +86,8 @@
 			1A0D0C061122334455667789 /* ContentView.swift */,
 			1A0D0C0611223344556677D3 /* OnboardingFlowView.swift */,
 			1A0D0C0611223344556677CF /* FloritaSettingsView.swift */,
-			1A0D0C06112233445566778A /* Info.plist */,
-			1A0D0C06112233445566778B /* Florita.entitlements */
+			1A0D0C0611223344556677D7 /* FloritaMiniView.swift */,
+			1A0D0C06112233445566778A /* Info.plist */
 		);
 		path = FloritaApp;
 		sourceTree = "<group>";
@@ -135,21 +99,10 @@
 			1A0D0C06112233445566778E /* PlantStage.swift */,
 			1A0D0C06112233445566778F /* PlantGraphics.swift */,
 			1A0D0C0611223344556677D4 /* UserPreferences.swift */,
-			1A0D0C06112233445566778C /* FloritaWidgetConstants.swift */,
 			1A0D0C061122334455667790 /* NotificationService.swift */,
 			1A0D0C06112233445566779C /* Localizable.strings */
 		);
 		path = Shared;
-		sourceTree = "<group>";
-	};
-	1A0D0C061122334455667784 /* FloritaWidget */ = {
-		isa = PBXGroup;
-		children = (
-			1A0D0C061122334455667792 /* FloritaWidget.swift */,
-			1A0D0C061122334455667793 /* Info.plist */,
-			1A0D0C061122334455667794 /* FloritaWidget.entitlements */
-		);
-		path = FloritaWidget;
 		sourceTree = "<group>";
 	};
 	1A0D0C061122334455667785 /* FloritaTests */ = {
@@ -164,7 +117,6 @@
 		isa = PBXGroup;
 		children = (
 			1A0D0C061122334455667796 /* Florita.app */,
-			1A0D0C061122334455667797 /* FloritaWidget.appex */,
 			1A0D0C061122334455667798 /* FloritaTests.xctest */
 		);
 		name = Products;
@@ -179,8 +131,7 @@
 		buildPhases = (
 			1A0D0C0611223344556677A0 /* Sources */,
 			1A0D0C0611223344556677A1 /* Frameworks */,
-			1A0D0C0611223344556677A2 /* Resources */,
-			1A0D0C0611223344556677A3 /* Embed App Extensions */
+			1A0D0C0611223344556677A2 /* Resources */
 		);
 		buildRules = (
 		);
@@ -190,23 +141,6 @@
 		productName = Florita;
 		productReference = 1A0D0C061122334455667796 /* Florita.app */;
 		productType = "com.apple.product-type.application";
-	};
-	1A0D0C06112233445566779A /* FloritaWidget */ = {
-		isa = PBXNativeTarget;
-		buildConfigurationList = 1A0D0C0611223344556677C9 /* Build configuration list for PBXNativeTarget "FloritaWidget" */;
-		buildPhases = (
-			1A0D0C0611223344556677A4 /* Sources */,
-			1A0D0C0611223344556677A5 /* Frameworks */,
-			1A0D0C0611223344556677A6 /* Resources */
-		);
-		buildRules = (
-		);
-		dependencies = (
-		);
-		name = FloritaWidget;
-		productName = FloritaWidget;
-		productReference = 1A0D0C061122334455667797 /* FloritaWidget.appex */;
-		productType = "com.apple.product-type.app-extension";
 	};
 	1A0D0C06112233445566779B /* FloritaTests */ = {
 		isa = PBXNativeTarget;
@@ -268,7 +202,6 @@
 		projectRoot = "";
 		targets = (
 			1A0D0C061122334455667799 /* Florita */,
-			1A0D0C06112233445566779A /* FloritaWidget */,
 			1A0D0C06112233445566779B /* FloritaTests */
 		);
 	};
@@ -280,14 +213,6 @@
 		buildActionMask = 2147483647;
 		files = (
 			1A0D0C0611223344556677B7 /* Localizable.strings in Resources */
-		);
-		runOnlyForDeploymentPostprocessing = 0;
-	};
-	1A0D0C0611223344556677A6 /* Resources */ = {
-		isa = PBXResourcesBuildPhase;
-		buildActionMask = 2147483647;
-		files = (
-			1A0D0C0611223344556677BE /* Localizable.strings in Resources */
 		);
 		runOnlyForDeploymentPostprocessing = 0;
 	};
@@ -306,7 +231,6 @@
 		buildActionMask = 2147483647;
 		files = (
 			1A0D0C0611223344556677B6 /* NotificationService.swift in Sources */,
-			1A0D0C0611223344556677B5 /* FloritaWidgetConstants.swift in Sources */,
 			1A0D0C0611223344556677B4 /* PlantGraphics.swift in Sources */,
 			1A0D0C0611223344556677B3 /* PlantStage.swift in Sources */,
 			1A0D0C0611223344556677B2 /* PlantStore.swift in Sources */,
@@ -314,21 +238,8 @@
 			1A0D0C0611223344556677B0 /* FloritaApp.swift in Sources */,
 			1A0D0C0611223344556677D0 /* FloritaSettingsView.swift in Sources */,
 			1A0D0C0611223344556677D1 /* OnboardingFlowView.swift in Sources */,
-			1A0D0C0611223344556677D2 /* UserPreferences.swift in Sources */
-		);
-		runOnlyForDeploymentPostprocessing = 0;
-	};
-	1A0D0C0611223344556677A4 /* Sources */ = {
-		isa = PBXSourcesBuildPhase;
-		buildActionMask = 2147483647;
-		files = (
-			1A0D0C0611223344556677BD /* NotificationService.swift in Sources */,
-			1A0D0C0611223344556677BC /* FloritaWidgetConstants.swift in Sources */,
-			1A0D0C0611223344556677BB /* PlantGraphics.swift in Sources */,
-			1A0D0C0611223344556677BA /* PlantStage.swift in Sources */,
-			1A0D0C0611223344556677B9 /* PlantStore.swift in Sources */,
-			1A0D0C0611223344556677B8 /* FloritaWidget.swift in Sources */,
-			1A0D0C0611223344556677D5 /* UserPreferences.swift in Sources */
+			1A0D0C0611223344556677D2 /* UserPreferences.swift in Sources */,
+			1A0D0C0611223344556677D6 /* FloritaMiniView.swift in Sources */
 		);
 		runOnlyForDeploymentPostprocessing = 0;
 	};
@@ -472,7 +383,6 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			ASSETCATALOG_COMPILER_APPICON_NAME = "";
-			CODE_SIGN_ENTITLEMENTS = FloritaApp/Florita.entitlements;
 			CODE_SIGN_IDENTITY = "-";
 			CODE_SIGN_STYLE = Manual;
 			CODE_SIGNING_ALLOWED = NO;
@@ -501,7 +411,6 @@
 		isa = XCBuildConfiguration;
 		buildSettings = {
 			ASSETCATALOG_COMPILER_APPICON_NAME = "";
-			CODE_SIGN_ENTITLEMENTS = FloritaApp/Florita.entitlements;
 			CODE_SIGN_STYLE = Automatic;
 			COMBINE_HIDPI_IMAGES = YES;
 			CURRENT_PROJECT_VERSION = 1;
@@ -518,61 +427,6 @@
 			PRODUCT_BUNDLE_IDENTIFIER = com.example.florita;
 			PRODUCT_NAME = Florita;
 			SDKROOT = macosx;
-			SWIFT_VERSION = 5.9;
-			TARGETED_DEVICE_FAMILY = "1";
-		};
-		name = Release;
-	};
-	1A0D0C0611223344556677CA /* Debug */ = {
-		isa = XCBuildConfiguration;
-		buildSettings = {
-			APPLICATION_EXTENSION_API_ONLY = YES;
-			CODE_SIGN_ENTITLEMENTS = FloritaWidget/FloritaWidget.entitlements;
-			CODE_SIGN_IDENTITY = "-";
-			CODE_SIGN_STYLE = Manual;
-			CODE_SIGNING_ALLOWED = NO;
-			CODE_SIGNING_REQUIRED = NO;
-			CURRENT_PROJECT_VERSION = 1;
-			DEVELOPMENT_TEAM = "";
-			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = FloritaWidget/Info.plist;
-			LD_RUNPATH_SEARCH_PATHS = (
-				"$(inherited)",
-				"@executable_path/../Frameworks",
-				"@executable_path/../../Frameworks"
-			);
-			MACOSX_DEPLOYMENT_TARGET = 14.0;
-			MARKETING_VERSION = 1.0;
-			PRODUCT_BUNDLE_IDENTIFIER = com.example.florita.widget;
-			PRODUCT_NAME = FloritaWidget;
-			SDKROOT = macosx;
-			SKIP_INSTALL = YES;
-			SWIFT_VERSION = 5.9;
-			TARGETED_DEVICE_FAMILY = "1";
-		};
-		name = Debug;
-	};
-	1A0D0C0611223344556677CB /* Release */ = {
-		isa = XCBuildConfiguration;
-		buildSettings = {
-			APPLICATION_EXTENSION_API_ONLY = YES;
-			CODE_SIGN_ENTITLEMENTS = FloritaWidget/FloritaWidget.entitlements;
-			CODE_SIGN_STYLE = Automatic;
-			CURRENT_PROJECT_VERSION = 1;
-			DEVELOPMENT_TEAM = "";
-			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = FloritaWidget/Info.plist;
-			LD_RUNPATH_SEARCH_PATHS = (
-				"$(inherited)",
-				"@executable_path/../Frameworks",
-				"@executable_path/../../Frameworks"
-			);
-			MACOSX_DEPLOYMENT_TARGET = 14.0;
-			MARKETING_VERSION = 1.0;
-			PRODUCT_BUNDLE_IDENTIFIER = com.example.florita.widget;
-			PRODUCT_NAME = FloritaWidget;
-			SDKROOT = macosx;
-			SKIP_INSTALL = YES;
 			SWIFT_VERSION = 5.9;
 			TARGETED_DEVICE_FAMILY = "1";
 		};
@@ -636,15 +490,6 @@
 		buildConfigurations = (
 			1A0D0C0611223344556677C7 /* Debug */,
 			1A0D0C0611223344556677C8 /* Release */
-		);
-		defaultConfigurationIsVisible = 0;
-		defaultConfigurationName = Release;
-	};
-	1A0D0C0611223344556677C9 /* Build configuration list for PBXNativeTarget "FloritaWidget" */ = {
-		isa = XCConfigurationList;
-		buildConfigurations = (
-			1A0D0C0611223344556677CA /* Debug */,
-			1A0D0C0611223344556677CB /* Release */
 		);
 		defaultConfigurationIsVisible = 0;
 		defaultConfigurationName = Release;

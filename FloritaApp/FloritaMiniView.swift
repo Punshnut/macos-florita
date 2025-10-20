@@ -6,7 +6,9 @@ struct FloritaMiniView: View {
 
     var body: some View {
         ZStack {
-            backgroundSurface
+            if shouldShowBackdrop {
+                backgroundSurface
+            }
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 6) {
@@ -17,9 +19,9 @@ struct FloritaMiniView: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-            PlantDisplayView(stage: store.stage, animated: store.prefersAnimatedGraphics)
-                .overlay(WateringOverlay(isActive: isWatering))
-                .frame(width: 120, height: 120)
+                    PlantDisplayView(stage: store.stage, animated: store.prefersAnimatedGraphics)
+                        .overlay(WateringOverlay(isActive: isWatering))
+                        .frame(width: 120, height: 120)
                 }
                 Button(action: waterPlant) {
                     Text(StoreCopy.waterButton)
@@ -37,6 +39,7 @@ struct FloritaMiniView: View {
             .padding(20)
         }
         .background(Color.clear)
+        .background(WindowTransparencyApplier(isTransparent: store.backgroundStyle.isTransparent || store.miniWindowPrefersFullTransparency))
         .padding(12)
     }
 
@@ -46,20 +49,36 @@ struct FloritaMiniView: View {
 
     private func waterPlant() {
         guard store.waterToday() else { return }
-        withAnimation { isWatering = true }
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.0))
-            withAnimation { isWatering = false }
-        }
-        let now = Date()
-        let nextNine = Calendar.current.nextDate(after: now, matching: DateComponents(hour: 9, minute: 0), matchingPolicy: .nextTimePreservingSmallerComponents) ?? now.addingTimeInterval(24 * 60 * 60)
-        NotificationService.shared.scheduleCareReminder(at: nextNine)
+        triggerWateringAnimation()
+        scheduleNextReminder()
     }
 
     private enum StoreCopy {
         static let waterButton = Localization.string("waterButton")
         static let notWateredToday = Localization.string("notWateredToday")
         static let wateredToday = Localization.string("wateredToday")
+    }
+
+    private var shouldShowBackdrop: Bool {
+        !(store.backgroundStyle.isTransparent || store.miniWindowPrefersFullTransparency)
+    }
+
+    private func triggerWateringAnimation(duration: Duration = .seconds(1.0)) {
+        withAnimation { isWatering = true }
+        Task { @MainActor in
+            try? await Task.sleep(for: duration)
+            withAnimation { isWatering = false }
+        }
+    }
+
+    private func scheduleNextReminder() {
+        let now = Date()
+        let nextNine = Calendar.current.nextDate(
+            after: now,
+            matching: DateComponents(hour: 9, minute: 0),
+            matchingPolicy: .nextTimePreservingSmallerComponents
+        ) ?? now.addingTimeInterval(24 * 60 * 60)
+        NotificationService.shared.scheduleCareReminder(at: nextNine)
     }
 
     @ViewBuilder

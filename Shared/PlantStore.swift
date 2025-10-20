@@ -14,6 +14,7 @@ final class PlantStore: ObservableObject {
         static let windowSizePreference = "windowSizePreference"
         static let backgroundStylePreference = "backgroundStylePreference"
         static let menuBarEnabled = "menuBarEnabled"
+        static let miniWindowTransparency = "miniWindowTransparency"
     }
 
     private let defaults: UserDefaults
@@ -25,6 +26,7 @@ final class PlantStore: ObservableObject {
     private var windowSizeStorage: AppStorage<String>
     private var backgroundStyleStorage: AppStorage<String>
     private var menuBarStorage: AppStorage<Bool>
+    private var miniWindowTransparencyStorage: AppStorage<Bool>
     private let calendar: Calendar
 
     @MainActor
@@ -39,6 +41,7 @@ final class PlantStore: ObservableObject {
         windowSizeStorage = AppStorage(wrappedValue: WindowSizePreference.large.rawValue, StorageKey.windowSizePreference, store: defaults)
         backgroundStyleStorage = AppStorage(wrappedValue: BackgroundStylePreference.cozyGradient.rawValue, StorageKey.backgroundStylePreference, store: defaults)
         menuBarStorage = AppStorage(wrappedValue: false, StorageKey.menuBarEnabled, store: defaults)
+        miniWindowTransparencyStorage = AppStorage(wrappedValue: false, StorageKey.miniWindowTransparency, store: defaults)
         recomputeStage()
     }
 
@@ -122,6 +125,15 @@ final class PlantStore: ObservableObject {
         }
     }
 
+    var miniWindowPrefersFullTransparency: Bool {
+        get { miniWindowTransparencyStorage.wrappedValue }
+        set {
+            guard newValue != miniWindowTransparencyStorage.wrappedValue else { return }
+            objectWillChange.send()
+            miniWindowTransparencyStorage.wrappedValue = newValue
+        }
+    }
+
     var hasWateredToday: Bool {
         guard let lastWateredDate else { return false }
         return PlantStore.isSameCalendarDay(lastWateredDate, Date(), calendar: calendar)
@@ -135,6 +147,11 @@ final class PlantStore: ObservableObject {
         lastWateredDate = now
         daysOfCare += 1
         return true
+    }
+
+    func advanceGrowthForDebug(by steps: Int = 1) {
+        guard steps > 0 else { return }
+        daysOfCare += steps
     }
 
     func recomputeStage() {
@@ -154,6 +171,7 @@ final class PlantStore: ObservableObject {
         windowSize = .large
         backgroundStyle = .cozyGradient
         menuBarIconEnabled = false
+        miniWindowPrefersFullTransparency = false
     }
 
     func markOnboardingComplete() {

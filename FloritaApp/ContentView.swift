@@ -61,8 +61,11 @@ struct ContentView: View {
             .padding(.horizontal, 32)
             .padding(.vertical, 44)
             .frame(maxWidth: 520)
+            hiddenDebugGrowthButton
         }
         .frame(minWidth: store.windowSize.minimumSize.width, minHeight: store.windowSize.minimumSize.height)
+        .background(WindowSizeApplier(targetSize: store.windowSize.minimumSize))
+        .background(WindowTransparencyApplier(isTransparent: store.backgroundStyle.isTransparent))
         .onAppear {
             if showOnboarding == false && store.hasCompletedOnboarding == false {
                 showOnboarding = true
@@ -136,18 +139,46 @@ struct ContentView: View {
     private func waterPlant() {
         let didWater = store.waterToday()
         guard didWater else { return }
+        triggerWateringAnimation()
+        scheduleNextReminder()
+    }
+
+    private func triggerWateringAnimation(duration: Duration = .seconds(1.1)) {
         withAnimation {
             isWatering = true
         }
         Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.1))
+            try? await Task.sleep(for: duration)
             withAnimation {
                 isWatering = false
             }
         }
+    }
+
+    private func scheduleNextReminder() {
         let now = Date()
-        let nextNine = Calendar.current.nextDate(after: now, matching: DateComponents(hour: 9, minute: 0), matchingPolicy: .nextTimePreservingSmallerComponents) ?? now.addingTimeInterval(24 * 60 * 60)
+        let nextNine = Calendar.current.nextDate(
+            after: now,
+            matching: DateComponents(hour: 9, minute: 0),
+            matchingPolicy: .nextTimePreservingSmallerComponents
+        ) ?? now.addingTimeInterval(24 * 60 * 60)
         NotificationService.shared.scheduleCareReminder(at: nextNine)
+    }
+
+    private func debugAdvanceGrowth() {
+        store.advanceGrowthForDebug()
+        triggerWateringAnimation(duration: .seconds(0.9))
+    }
+
+    @ViewBuilder
+    private var hiddenDebugGrowthButton: some View {
+        Button(action: debugAdvanceGrowth) {
+            EmptyView()
+        }
+        .keyboardShortcut("g", modifiers: [.command, .option])
+        .frame(width: 0, height: 0)
+        .accessibilityHidden(true)
+        .opacity(0)
     }
 }
 

@@ -22,6 +22,7 @@
 	1A0D0C0611223344556677D8 /* FloritaMenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677D9 /* FloritaMenuBarView.swift */; };
 	1A0D0C0611223344556677DA /* PlantDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677DB /* PlantDisplayView.swift */; };
 	1A0D0C0611223344556677DC /* WateringOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677DD /* WateringOverlay.swift */; };
+	1A0D0C0611223344556677E0 /* WindowConfigurationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0D0C0611223344556677DF /* WindowConfigurationHelpers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +49,7 @@
 	1A0D0C06112233445566779D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 	1A0D0C06112233445566779E /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 	1A0D0C06112233445566779F /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+	1A0D0C0611223344556677DF /* WindowConfigurationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowConfigurationHelpers.swift; sourceTree = "<group>"; };
 	1A0D0C0611223344556677CF /* FloritaSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloritaSettingsView.swift; sourceTree = "<group>"; };
 	1A0D0C0611223344556677D3 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
 	1A0D0C0611223344556677D4 /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 			1A0D0C0611223344556677DD /* WateringOverlay.swift */,
 			1A0D0C0611223344556677D4 /* UserPreferences.swift */,
 			1A0D0C061122334455667790 /* NotificationService.swift */,
+			1A0D0C0611223344556677DF /* WindowConfigurationHelpers.swift */,
 			1A0D0C06112233445566779C /* Localizable.strings */
 		);
 		path = Shared;
@@ -251,7 +254,8 @@
 			1A0D0C0611223344556677D6 /* FloritaMiniView.swift in Sources */,
 			1A0D0C0611223344556677D8 /* FloritaMenuBarView.swift in Sources */,
 			1A0D0C0611223344556677DA /* PlantDisplayView.swift in Sources */,
-			1A0D0C0611223344556677DC /* WateringOverlay.swift in Sources */
+			1A0D0C0611223344556677DC /* WateringOverlay.swift in Sources */,
+			1A0D0C0611223344556677E0 /* WindowConfigurationHelpers.swift in Sources */
 		);
 		runOnlyForDeploymentPostprocessing = 0;
 	};

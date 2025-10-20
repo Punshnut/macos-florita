@@ -16,6 +16,8 @@ struct FloritaSettingsView: View {
                         Text(option.displayName).tag(option)
                     }
                 }
+                Toggle("Make Florita Mini fully transparent", isOn: miniWindowTransparencyBinding)
+                    .toggleStyle(.switch)
             }
 
             Section("Menu Bar") {
@@ -62,6 +64,13 @@ struct FloritaSettingsView: View {
         Binding(
             get: { store.menuBarIconEnabled },
             set: { store.menuBarIconEnabled = $0 }
+        )
+    }
+
+    private var miniWindowTransparencyBinding: Binding<Bool> {
+        Binding(
+            get: { store.miniWindowPrefersFullTransparency },
+            set: { store.miniWindowPrefersFullTransparency = $0 }
         )
     }
 }

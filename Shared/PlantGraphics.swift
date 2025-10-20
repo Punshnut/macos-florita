@@ -6,13 +6,16 @@ import SwiftUI
 struct StaticGrowthCanvas: View {
     /// Stage that determines which layers should be rendered.
     var growthStage: FloritaGrowthStage
+    /// Flag to determine whether sunrays should be visible.
+    var showsSunRays: Bool
     /// Phase emitted by tap interactions to drive temporary shake.
     var tapShakePhase: CGFloat
 
     var body: some View {
         GeometryReader { geometry in
             let canvasSize = geometry.size
-            let layerFactory = GrowthSceneLayers(growthStage: growthStage)
+            let layerFactory = GrowthSceneLayers(growthStage: growthStage,
+                                                 showsSunRays: showsSunRays)
             let tapSway = tapShakeSway(phase: tapShakePhase, time: nil)
             ZStack {
                 layerFactory.makeBackgroundBaseLayer()
@@ -22,7 +25,11 @@ struct StaticGrowthCanvas: View {
                 layerFactory.makeSoilLayer(size: canvasSize)
                 layerFactory.makeStemLayer(size: canvasSize, sway: tapSway, growth: 1)
                 if growthStage != .sprout {
-                    layerFactory.makeLeafLayer(size: canvasSize, growth: 1, sway: tapSway)
+                    layerFactory.makeLeafLayer(size: canvasSize,
+                                               growth: 1,
+                                               sway: tapSway,
+                                               tapShakePhase: tapShakePhase,
+                                               time: nil)
                 }
                 if growthStage == .blooms {
                     layerFactory.makeBloomLayer(size: canvasSize,
@@ -43,6 +50,8 @@ struct StaticGrowthCanvas: View {
 struct AnimatedGrowthCanvas: View {
     /// Stage that drives the number of layers and animation limits.
     var growthStage: FloritaGrowthStage
+    /// Flag to determine whether sunrays should be visible.
+    var showsSunRays: Bool
     /// Phase emitted by tap interactions to drive temporary shake.
     var tapShakePhase: CGFloat
     /// Reference date used to compute progress within the looped animation.
@@ -53,6 +62,7 @@ struct AnimatedGrowthCanvas: View {
             AnimatedGrowthScene(date: timeline.date,
                                 growthStage: growthStage,
                                 animationStartDate: animationStartDate,
+                                showsSunRays: showsSunRays,
                                 tapShakePhase: tapShakePhase)
         }
         .aspectRatio(1, contentMode: .fit)
@@ -67,6 +77,7 @@ private struct AnimatedGrowthScene: View {
     let date: Date
     let growthStage: FloritaGrowthStage
     let animationStartDate: Date
+    let showsSunRays: Bool
     let tapShakePhase: CGFloat
 
     private var elapsed: TimeInterval { max(date.timeIntervalSince(animationStartDate), 0) }
@@ -78,7 +89,8 @@ private struct AnimatedGrowthScene: View {
     var body: some View {
         GeometryReader { geometry in
             let canvasSize = geometry.size
-            let layerFactory = GrowthSceneLayers(growthStage: growthStage)
+            let layerFactory = GrowthSceneLayers(growthStage: growthStage,
+                                                 showsSunRays: showsSunRays)
             let stageProgress = min(progress, growthStage.animationCap)
             let stemGrowth = ease((stageProgress / 0.4).clamped())
             let leavesGrowth = growthStage != .sprout ? ease(((stageProgress - 0.4) / 0.3).clamped()) : 0
@@ -95,7 +107,11 @@ private struct AnimatedGrowthScene: View {
                 layerFactory.makeSoilLayer(size: canvasSize)
                 layerFactory.makeStemLayer(size: canvasSize, sway: combinedSway, growth: stemGrowth)
                 if leavesGrowth > 0 {
-                    layerFactory.makeLeafLayer(size: canvasSize, growth: leavesGrowth, sway: combinedSway)
+                    layerFactory.makeLeafLayer(size: canvasSize,
+                                               growth: leavesGrowth,
+                                               sway: combinedSway,
+                                               tapShakePhase: tapShakePhase,
+                                               time: elapsed)
                 }
                 if bloomGrowth > 0 {
                     layerFactory.makeBloomLayer(size: canvasSize,
@@ -114,6 +130,7 @@ private struct AnimatedGrowthScene: View {
 /// Factory that generates all individual shape layers composing the plant illustration.
 private struct GrowthSceneLayers {
     let growthStage: FloritaGrowthStage
+    let showsSunRays: Bool
 
     /// Base rounded rectangle background that everything sits upon.
     func makeBackgroundBaseLayer() -> some View {
@@ -133,41 +150,75 @@ private struct GrowthSceneLayers {
 
     /// Emits rotating light rays that add atmospheric motion.
     func makeLightRayLayer(size: CGSize, time: TimeInterval?) -> some View {
-        let animatedAngle = Angle.degrees((time ?? 0) * 6)
-        return ZStack {
-            ForEach(0..<8) { index in
-                let baseRotation = Angle.degrees(Double(index) * 9 - 32)
-                let pulsation = 0.08 + 0.05 * sin((time ?? 0) / 1.8 + Double(index) * 0.9)
-                RoundedRectangle(cornerRadius: size.height * 0.4, style: .continuous)
-                    .fill(
-                        LinearGradient(colors: [Color.white.opacity(0.28), Color.white.opacity(0)],
-                                       startPoint: .leading,
-                                       endPoint: .trailing)
-                    )
-                    .frame(width: size.width * 1.35, height: size.height * 0.16)
-                    .position(x: size.width / 2, y: size.height * 0.24)
-                    .rotationEffect(baseRotation + animatedAngle)
-                    .opacity(pulsation)
-                    .blendMode(.plusLighter)
+        ZStack {
+            if showsSunRays {
+                sunRayLayer(size: size, time: time)
             }
         }
+        .frame(width: size.width, height: size.height)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .opacity(showsSunRays ? 1 : 0)
+        .animation(.easeInOut(duration: 0.9), value: showsSunRays)
     }
 
     /// Paints animated sky gradients and clouds.
     func makeSkyLayer(size: CGSize, time: TimeInterval?) -> some View {
         let drift = CGFloat(sin((time ?? 0) / 5.0)) * 16
-        let glowPulse = 0.15 + 0.1 * sin((time ?? 0) / 4.0)
         return ZStack {
-            RadialGradient(colors: [Color(red: 1.0, green: 0.98, blue: 0.88).opacity(0.9 + glowPulse), Color.clear],
-                           center: UnitPoint(x: 0.25, y: 0.2),
-                           startRadius: 12,
-                           endRadius: size.width * 0.65)
-                .blendMode(.plusLighter)
+            if showsSunRays {
+                LinearGradient(colors: [Color.white.opacity(0.34), Color.white.opacity(0)],
+                               startPoint: .top,
+                               endPoint: .bottom)
+                    .frame(width: size.width * 0.9, height: size.height * 0.7)
+                    .position(x: size.width / 2, y: size.height * 0.18)
+                    .blendMode(.screen)
+            } else {
+                LinearGradient(colors: [Color(red: 1.0, green: 0.98, blue: 0.88).opacity(0.28),
+                                        Color.clear],
+                               startPoint: .top,
+                               endPoint: .bottom)
+                    .frame(width: size.width, height: size.height * 0.7)
+                    .position(x: size.width * 0.4, y: size.height * 0.26)
+                    .blendMode(.plusLighter)
+            }
             cloud(at: CGPoint(x: size.width * 0.25 + drift, y: size.height * 0.18), scale: 0.9)
             cloud(at: CGPoint(x: size.width * 0.68 + drift * 0.6, y: size.height * 0.16), scale: 1.15)
         }
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
+
+    /// Animated rays that cascade from the top when Florita has been watered.
+    private func sunRayLayer(size: CGSize, time: TimeInterval?) -> some View {
+        let timeline = time ?? 0
+        return ZStack {
+            ForEach(-3...3, id: \.self) { offset in
+                let normalized = Double(offset)
+                let baseWidth = max(0.08, 0.18 - abs(normalized) * 0.02)
+                let rayWidth = size.width * CGFloat(baseWidth)
+                let rayHeight = size.height * (1.32 + CGFloat(abs(normalized)) * 0.06)
+                let sway = sin(timeline * 1.35 + normalized * 0.9) * 3.6
+                RoundedRectangle(cornerRadius: rayWidth / 2, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [Color.white.opacity(0.36),
+                                                Color.white.opacity(0)],
+                                       startPoint: .top,
+                                       endPoint: .bottom)
+                    )
+                    .frame(width: rayWidth, height: rayHeight)
+                    .position(x: size.width / 2, y: -size.height * 0.18)
+                    .rotationEffect(.degrees(normalized * 5.8 + sway))
+                    .opacity(0.27 - abs(normalized) * 0.035)
+                    .blendMode(.screen)
+            }
+        }
+        .overlay(
+            LinearGradient(colors: [Color.white.opacity(0.28), Color.clear],
+                           startPoint: .top,
+                           endPoint: .bottom)
+                .frame(width: size.width * 0.86, height: size.height * 0.74)
+                .position(x: size.width / 2, y: size.height * 0.08)
+                .blendMode(.screen)
+        )
     }
 
     /// Subtle shadow that grounds the soil layer.
@@ -202,7 +253,11 @@ private struct GrowthSceneLayers {
     }
 
     /// Composite leaf layer comprised of multiple reusable leaf shapes.
-    func makeLeafLayer(size: CGSize, growth: CGFloat, sway: Double) -> some View {
+    func makeLeafLayer(size: CGSize,
+                       growth: CGFloat,
+                       sway: Double,
+                       tapShakePhase: CGFloat,
+                       time: TimeInterval?) -> some View {
         let specs: [LeafSpec] = [
             LeafSpec(position: CGPoint(x: 0.28, y: 0.7),
                      size: CGSize(width: 0.34, height: 0.22),
@@ -336,12 +391,16 @@ private struct GrowthSceneLayers {
             ForEach(Array(specs.enumerated()), id: \.offset) { index, spec in
                 let localGrowth = stagedLeafGrowth(global: growth, start: spec.start, span: spec.span)
                 if localGrowth > 0 {
+                    let rubberband = tapShakeRubberbandScale(phase: tapShakePhase,
+                                                             time: time,
+                                                             offset: Double(index) * 0.55 + Double(spec.baseRotation) * 0.01)
                     LeafShape(curve: spec.curve)
                         .fill(leafGradient(tone: spec.tone))
                         .frame(width: size.width * spec.size.width, height: size.height * spec.size.height)
                         .position(x: size.width * spec.position.x, y: size.height * spec.position.y)
                         .rotationEffect(.degrees(spec.baseRotation + sway * spec.swayMultiplier))
                         .scaleEffect(0.25 + 0.75 * localGrowth, anchor: spec.anchor)
+                        .scaleEffect(x: rubberband.x, y: rubberband.y, anchor: spec.anchor)
                         .opacity(Double(localGrowth))
                         .zIndex(Double(index))
                 }
@@ -425,6 +484,7 @@ private struct GrowthSceneLayers {
         let shakeOscillation: Double
         let bob: Double
         let tilt: Double
+        let rubberband: RubberbandScale
 
         var stemRotation: Angle {
             Angle.degrees(tilt + swayContribution * 0.6 + shakeOscillation * 3.5)
@@ -571,12 +631,16 @@ private struct GrowthSceneLayers {
             shakeOscillation = sin(fallbackPhase) * tapNormalized
         }
         let bob = baseBob + shakeOscillation * Double(bloomProgress) * 2.4
+        let rubberband = tapShakeRubberbandScale(phase: CGFloat(tapNormalized),
+                                                 time: time,
+                                                 offset: Double(index) * 0.6 + Double(spec.tilt) * 0.02)
         let motion = TulipMotion(stemScale: stemScale,
                                  bloomScale: bloomScale,
                                  swayContribution: swayContribution,
                                  shakeOscillation: shakeOscillation,
                                  bob: bob,
-                                 tilt: spec.tilt)
+                                 tilt: spec.tilt,
+                                 rubberband: rubberband)
         let highlightStrength = CGFloat(0.75 + tapNormalized * 0.35)
         let zIndex = Double(index) + 1
 
@@ -613,16 +677,19 @@ private struct GrowthSceneLayers {
             .fill(tulipGradient(palette: palette))
             .frame(width: geometry.flowerWidth, height: geometry.flowerHeight)
             .scaleEffect(motion.bloomScale, anchor: .bottom)
+            .scaleEffect(x: motion.rubberband.x, y: motion.rubberband.y, anchor: .bottom)
             .rotationEffect(motion.bloomRotation, anchor: .bottom)
             .position(x: geometry.centerX, y: stemTopY)
             .opacity(Double(bloomProgress))
             .overlay(tulipEdgeHighlight(canvasWidth: canvasWidth,
                                         bloomProgress: bloomProgress,
-                                        highlightStrength: highlightStrength))
+                                        highlightStrength: highlightStrength)
+                        .scaleEffect(x: motion.rubberband.x, y: motion.rubberband.y, anchor: .bottom))
             .overlay(tulipShineOverlay(width: geometry.flowerWidth,
                                        height: geometry.flowerHeight,
                                        bloomProgress: bloomProgress,
-                                       highlightStrength: highlightStrength))
+                                       highlightStrength: highlightStrength)
+                        .scaleEffect(x: motion.rubberband.x, y: motion.rubberband.y, anchor: .bottom))
             .shadow(color: Color.black.opacity(0.18), radius: 6, x: 0, y: 3)
     }
 
@@ -762,6 +829,33 @@ private func tapShakeSway(phase: CGFloat, time: TimeInterval?) -> Double {
     return primarySwing + jitterSwing
 }
 
+/// Simple container describing anisotropic scale factors.
+private struct RubberbandScale {
+    let x: CGFloat
+    let y: CGFloat
+
+    static let identity = RubberbandScale(x: 1, y: 1)
+}
+
+/// Generates a stretchy rubberband scale driven by the tap shake interaction.
+private func tapShakeRubberbandScale(phase: CGFloat,
+                                     time: TimeInterval?,
+                                     offset: Double) -> RubberbandScale {
+    let normalized = tapShakeNormalized(phase)
+    guard normalized > 0 else { return .identity }
+    let inverse = 1 - normalized
+    let wave = sin(inverse * .pi * 4.2 + offset)
+    let flutter: Double
+    if let time {
+        flutter = sin(time * 15.0 + offset * 1.1)
+    } else {
+        flutter = sin(inverse * .pi * 4.8 + offset * 1.1)
+    }
+    let stretchX = max(0.85, 1 + CGFloat((wave * 0.1 + flutter * 0.045) * normalized))
+    let stretchY = max(0.85, 1 - CGFloat((wave * 0.08 + flutter * 0.035) * normalized))
+    return RubberbandScale(x: stretchX, y: stretchY)
+}
+
 /// Procedural bezier describing Florita's stem.
 private struct StemShape: Shape {
     func path(in rect: CGRect) -> Path {
@@ -863,10 +957,10 @@ private func ease(_ value: CGFloat) -> CGFloat {
 struct StaticGrowthCanvas_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            StaticGrowthCanvas(growthStage: .sprout, tapShakePhase: 0)
-            StaticGrowthCanvas(growthStage: .leaves, tapShakePhase: 0)
-            StaticGrowthCanvas(growthStage: .blooms, tapShakePhase: 0)
-            AnimatedGrowthCanvas(growthStage: .blooms, tapShakePhase: 0)
+            StaticGrowthCanvas(growthStage: .sprout, showsSunRays: false, tapShakePhase: 0)
+            StaticGrowthCanvas(growthStage: .leaves, showsSunRays: true, tapShakePhase: 0)
+            StaticGrowthCanvas(growthStage: .blooms, showsSunRays: true, tapShakePhase: 0)
+            AnimatedGrowthCanvas(growthStage: .blooms, showsSunRays: true, tapShakePhase: 0)
         }
         .padding()
         .previewLayout(.fixed(width: 240, height: 240))

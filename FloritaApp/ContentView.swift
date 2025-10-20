@@ -16,7 +16,8 @@ struct FloritaDashboardView: View {
             appBackdrop
             VStack(spacing: 32) {
                 FloritaPlantDisplay(growthStage: growthStore.currentGrowthStage,
-                                    isAnimated: growthStore.isAnimationEnabled)
+                                    isAnimated: growthStore.isAnimationEnabled,
+                                    showsSunRays: growthStore.didWaterToday)
                     .overlay(WateringAnimationOverlay(isActive: isWateringAnimationActive))
                     .padding(26)
                     .background(plantCardBackdrop)

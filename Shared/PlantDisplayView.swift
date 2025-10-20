@@ -6,6 +6,8 @@ struct FloritaPlantDisplay: View {
     var growthStage: FloritaGrowthStage
     /// Flag determining whether the animated illustration should be used.
     var isAnimated: Bool
+    /// Indicates whether the sunray accent should be visible.
+    var showsSunRays: Bool
     /// Phase value that drives tap-triggered shake animations.
     @State private var tapShakePhase: CGFloat = 0
 
@@ -21,9 +23,11 @@ struct FloritaPlantDisplay: View {
     private var plantContent: some View {
         if isAnimated {
             AnimatedGrowthCanvas(growthStage: growthStage,
+                                 showsSunRays: showsSunRays,
                                  tapShakePhase: tapShakePhase)
         } else {
             StaticGrowthCanvas(growthStage: growthStage,
+                               showsSunRays: showsSunRays,
                                tapShakePhase: tapShakePhase)
         }
     }

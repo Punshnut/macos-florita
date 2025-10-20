@@ -23,7 +23,8 @@ struct FloritaMiniView: View {
                     }
                     Spacer()
                     FloritaPlantDisplay(growthStage: growthStore.currentGrowthStage,
-                                        isAnimated: growthStore.isAnimationEnabled)
+                                        isAnimated: growthStore.isAnimationEnabled,
+                                        showsSunRays: growthStore.didWaterToday)
                         .overlay(WateringAnimationOverlay(isActive: isWateringAnimationActive))
                         .frame(width: 120, height: 120)
                 }

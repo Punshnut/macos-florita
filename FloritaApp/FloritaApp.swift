@@ -3,6 +3,13 @@ import SwiftUI
 struct FloritaApp: App {
     @StateObject private var store = PlantStore.shared
 
+    private var menuBarBinding: Binding<Bool> {
+        Binding(
+            get: { store.menuBarIconEnabled },
+            set: { store.menuBarIconEnabled = $0 }
+        )
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView(store: store)
@@ -17,12 +24,10 @@ struct FloritaApp: App {
         Settings {
             FloritaSettingsView(store: store)
         }
-        if store.menuBarIconEnabled {
-            MenuBarExtra("Florita", systemImage: "leaf.fill") {
-                FloritaMenuBarView(store: store)
-                    .frame(width: 240)
-            }
-            .menuBarExtraStyle(.window)
+        MenuBarExtra("Florita", systemImage: "leaf.fill", isInserted: menuBarBinding) {
+            FloritaMenuBarView(store: store)
+                .frame(width: 240)
         }
+        .menuBarExtraStyle(.window)
     }
 }

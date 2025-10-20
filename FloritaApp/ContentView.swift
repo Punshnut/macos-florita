@@ -6,54 +6,63 @@ struct ContentView: View {
     @State private var isWatering = false
 
     var body: some View {
-        VStack(spacing: 28) {
-            Spacer(minLength: 12)
-            PlantDisplayView(stage: store.stage, animated: store.prefersAnimatedGraphics)
-                .overlay(WateringOverlay(isActive: isWatering))
-                .padding(.horizontal, 24)
-                .scaleEffect(isWatering ? 1.02 : 1)
-                .animation(.spring(response: 0.6, dampingFraction: 0.75), value: isWatering)
+        ZStack {
+            appBackground
+            VStack(spacing: 32) {
+                PlantDisplayView(stage: store.stage, animated: store.prefersAnimatedGraphics)
+                    .overlay(WateringOverlay(isActive: isWatering))
+                    .padding(26)
+                    .background(plantCardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 34, style: .continuous))
+                    .overlay(plantCardStroke)
+                    .scaleEffect(isWatering ? 1.02 : 1)
+                    .animation(.spring(response: 0.6, dampingFraction: 0.75), value: isWatering)
 
-            VStack(spacing: 12) {
-                Text(statusText)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(Color(red: 0.22, green: 0.35, blue: 0.31))
-                Text(store.stage.localizedDescription)
-                    .font(.body)
-                    .foregroundStyle(Color.secondary)
+                VStack(spacing: 10) {
+                    Text(statusText)
+                        .font(.system(.title, design: .rounded, weight: .semibold))
+                        .foregroundStyle(Color(red: 0.13, green: 0.31, blue: 0.43))
+                    Text(store.stage.localizedDescription)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                }
+                .multilineTextAlignment(.center)
+
+                Button(action: waterPlant) {
+                    Text(Localization.string("waterButton"))
+                        .font(.headline)
+                        .padding(.vertical, 16)
+                        .frame(maxWidth: .infinity)
+                        .background(buttonBackground)
+                        .foregroundStyle(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .stroke(Color.white.opacity(0.28))
+                        )
+                }
+                .buttonStyle(.plain)
+                .disabled(store.hasWateredToday)
+                .opacity(store.hasWateredToday ? 0.65 : 1)
+                .scaleEffect(isWatering ? 0.98 : 1)
+                .animation(.spring(response: 0.4, dampingFraction: 0.65), value: isWatering)
+
+                Button(action: { openWindow(id: "mini") }) {
+                    Label("Open Florita Mini", systemImage: "rectangle.portrait.on.rectangle.portrait")
+                        .labelStyle(.titleAndIcon)
+                        .font(.subheadline)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 18)
+                        .background(miniButtonBackground)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
             }
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 20)
-
-            Button(action: waterPlant) {
-                Text(Localization.string("waterButton"))
-                    .font(.headline)
-                    .padding(.vertical, 14)
-                    .frame(maxWidth: .infinity)
-                    .background(buttonBackground)
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 6)
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 36)
-            .disabled(store.hasWateredToday)
-            .scaleEffect(isWatering ? 0.98 : 1)
-            .animation(.spring(response: 0.4, dampingFraction: 0.65), value: isWatering)
-
-            Button(action: { openWindow(id: "mini") }) {
-                Label("Open Florita Mini", systemImage: "rectangle.portrait.on.rectangle.portrait")
-                    .labelStyle(.titleAndIcon)
-            }
-            .buttonStyle(.borderless)
-            .foregroundStyle(.secondary)
-
-            Spacer(minLength: 12)
+            .padding(.horizontal, 32)
+            .padding(.vertical, 44)
+            .frame(maxWidth: 520)
         }
-        .padding(.vertical, 32)
         .frame(minWidth: store.windowSize.minimumSize.width, minHeight: store.windowSize.minimumSize.height)
-        .background(appBackground)
         .onAppear {
             if showOnboarding == false && store.hasCompletedOnboarding == false {
                 showOnboarding = true
@@ -74,21 +83,49 @@ struct ContentView: View {
     }
 
     private var buttonBackground: some View {
-        LinearGradient(colors: [Color(red: 0.36, green: 0.64, blue: 0.57), Color(red: 0.27, green: 0.53, blue: 0.5)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        LinearGradient(colors: [Color(red: 0.09, green: 0.38, blue: 0.63),
+                                Color(red: 0.03, green: 0.26, blue: 0.43)],
+                       startPoint: .topLeading,
+                       endPoint: .bottomTrailing)
+    }
+
+    private var miniButtonBackground: some View {
+        LinearGradient(colors: [Color.white.opacity(0.28), Color.white.opacity(0.08)],
+                       startPoint: .topLeading,
+                       endPoint: .bottomTrailing)
+            .background(Color.white.opacity(0.04))
+    }
+
+    private var plantCardBackground: some View {
+        RoundedRectangle(cornerRadius: 34, style: .continuous)
+            .fill(
+                LinearGradient(colors: [Color(red: 0.93, green: 0.97, blue: 1.0),
+                                        Color(red: 0.88, green: 0.96, blue: 0.94)],
+                               startPoint: .topLeading,
+                               endPoint: .bottomTrailing)
+            )
+    }
+
+    private var plantCardStroke: some View {
+        RoundedRectangle(cornerRadius: 34, style: .continuous)
+            .stroke(Color.white.opacity(0.35), lineWidth: 1.2)
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 
     private var appBackground: some View {
         Group {
             switch store.backgroundStyle {
             case .cozyGradient:
-                ZStack {
-                    LinearGradient(colors: [Color(red: 0.95, green: 0.97, blue: 0.98), Color(red: 0.91, green: 0.95, blue: 0.92)], startPoint: .top, endPoint: .bottom)
-                    RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .stroke(Color.black.opacity(0.05), lineWidth: 1)
-                        .padding(12)
-                }
+                LinearGradient(colors: [Color(red: 0.82, green: 0.94, blue: 0.99),
+                                        Color(red: 0.92, green: 0.98, blue: 0.96)],
+                               startPoint: .topLeading,
+                               endPoint: .bottomTrailing)
+                    .overlay(
+                        AngularGradient(colors: [Color.white.opacity(0.12), Color.clear], center: .center)
+                            .blur(radius: 220)
+                    )
             case .plain:
-                Color(red: 0.96, green: 0.97, blue: 0.96)
+                Color(red: 0.94, green: 0.97, blue: 0.99)
             case .transparent:
                 Color.clear
             }

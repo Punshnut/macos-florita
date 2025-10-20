@@ -11,6 +11,7 @@ struct PlantCanvas: View {
             let layers = PlantSceneLayers(stage: stage)
             ZStack {
                 layers.backgroundBase()
+                layers.lightRaysLayer(size: size, time: nil)
                 layers.skyLayer(size: size, time: nil)
                 layers.soilShadow(size: size)
                 layers.soilLayer(size: size)
@@ -67,6 +68,7 @@ private struct PlantAnimationScene: View {
 
             ZStack {
                 layers.backgroundBase()
+                layers.lightRaysLayer(size: size, time: elapsed)
                 layers.skyLayer(size: size, time: elapsed)
                 layers.soilShadow(size: size)
                 layers.soilLayer(size: size)
@@ -89,8 +91,39 @@ private struct PlantSceneLayers {
 
     func backgroundBase() -> some View {
         RoundedRectangle(cornerRadius: 28, style: .continuous)
-            .fill(LinearGradient(colors: [Color(red: 0.91, green: 0.96, blue: 1.0), Color(red: 0.86, green: 0.94, blue: 0.92)], startPoint: .top, endPoint: .bottom))
-            .shadow(color: Color.black.opacity(0.1), radius: 14, x: 0, y: 9)
+            .fill(
+                LinearGradient(colors: [Color(red: 0.86, green: 0.95, blue: 0.99),
+                                        Color(red: 0.9, green: 0.98, blue: 0.95)],
+                               startPoint: .topLeading,
+                               endPoint: .bottomTrailing)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(Color.white.opacity(0.22), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.06), radius: 10, x: 0, y: 6)
+    }
+
+    func lightRaysLayer(size: CGSize, time: TimeInterval?) -> some View {
+        let animatedAngle = Angle.degrees((time ?? 0) * 6)
+        return ZStack {
+            ForEach(0..<8) { index in
+                let baseRotation = Angle.degrees(Double(index) * 9 - 32)
+                let pulsation = 0.08 + 0.05 * sin((time ?? 0) / 1.8 + Double(index) * 0.9)
+                RoundedRectangle(cornerRadius: size.height * 0.4, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [Color.white.opacity(0.28), Color.white.opacity(0)],
+                                       startPoint: .leading,
+                                       endPoint: .trailing)
+                    )
+                    .frame(width: size.width * 1.35, height: size.height * 0.16)
+                    .position(x: size.width / 2, y: size.height * 0.24)
+                    .rotationEffect(baseRotation + animatedAngle)
+                    .opacity(pulsation)
+                    .blendMode(.plusLighter)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
     func skyLayer(size: CGSize, time: TimeInterval?) -> some View {

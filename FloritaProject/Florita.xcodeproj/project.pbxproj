@@ -46,7 +46,7 @@
 	1A0D0C061122334455667795 /* PlantStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantStoreTests.swift; sourceTree = "<group>"; };
 	1A0D0C061122334455667796 /* Florita.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Florita.app; sourceTree = BUILT_PRODUCTS_DIR; };
 	1A0D0C061122334455667798 /* FloritaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FloritaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-	1A0D0C06112233445566779D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+	1A0D0C06112233445566779D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 	1A0D0C06112233445566779E /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 	1A0D0C06112233445566779F /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 	1A0D0C0611223344556677DF /* WindowConfigurationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowConfigurationHelpers.swift; sourceTree = "<group>"; };
@@ -204,7 +204,7 @@
 		hasScannedForEncodings = 0;
 		knownRegions = (
 			Base,
-			de,
+			en,
 			en,
 			es
 		);
@@ -282,7 +282,7 @@
 		isa = PBXVariantGroup;
 		children = (
 			1A0D0C06112233445566779E /* Base */,
-			1A0D0C06112233445566779D /* de */,
+			1A0D0C06112233445566779D /* en */,
 			1A0D0C06112233445566779F /* es */
 		);
 		name = Localizable.strings;

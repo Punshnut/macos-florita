@@ -58,7 +58,7 @@ private struct AnimatedGrowthScene: View {
     let growthStage: FloritaGrowthStage
     let animationStartDate: Date
 
-    private var elapsed: TimeInterval { max(date.timeIntervalSince(animationStart), 0) }
+    private var elapsed: TimeInterval { max(date.timeIntervalSince(animationStartDate), 0) }
     private var progress: CGFloat {
         let duration: TimeInterval = 5.5
         return CGFloat((elapsed / duration).clamped(to: 0...1))

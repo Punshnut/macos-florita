@@ -1,0 +1,17 @@
+/* Button labels */
+"waterButton" = "Water";
+
+/* Status messages */
+"notWateredToday" = "Florita is waiting for you 🌱";
+"wateredToday" = "Watered for today 🌿";
+
+/* Stage descriptions */
+"stage_sprout" = "A tender sprout is emerging.";
+"stage_leaves" = "Fresh green leaves unfurl.";
+"stage_blooms" = "Your flower is in full bloom.";
+
+/* Notification copy */
+"notification_body" = "A gentle reminder to water Florita.";
+"notification_title" = "Florita";
+
+/* Widget description */
